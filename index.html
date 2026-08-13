@@ -178,7 +178,32 @@
         .camera-btn { display: block; width: 100%; padding: 14px; background: #48BB78; color: white; text-align: center; border-radius: 10px; font-weight: bold; cursor: pointer; box-sizing: border-box; font-size: 1rem;}
         .preview-box { width: 100%; height: 160px; border: 2px dashed #CBD5E0; border-radius: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: center; color: #A0AEC0; font-size: 0.9rem; background: #F8FAFC; overflow: hidden; }
         .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-        .drawing-canvas { width: 100%; height: 200px; background: #F7FAFC; border: 2px solid #CBD5E0; border-radius: 10px; cursor: crosshair; touch-action: none; }
+        .draw-preview { height: 180px; }
+        .draw-open-btn { margin-top: 10px; background: #ED8936; box-shadow: 0 3px 8px rgba(237,137,54,0.35); }
+        .draw-colors, .draw-sizes, .draw-studio-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
+        .draw-color {
+            width: 34px; height: 34px; border-radius: 50%; border: 3px solid #E2E8F0; cursor: pointer; padding: 0;
+        }
+        .draw-color.selected { border-color: #F6E05E; box-shadow: 0 0 0 3px #2D3748; transform: scale(1.12); }
+        .draw-size, .draw-tool-btn {
+            border: none; border-radius: 12px; padding: 8px 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: #EDF2F7; color: #2D3748;
+        }
+        .draw-size.selected, .draw-tool-btn.selected { background: #4D96FF; color: white; }
+        .draw-tool-btn.eraser.selected { background: #A0AEC0; }
+        #draw-studio {
+            display: none; position: fixed; inset: 0; z-index: 3000; background: #1A202C;
+            flex-direction: column; padding: 10px 10px 14px; box-sizing: border-box;
+        }
+        #draw-studio.open { display: flex; }
+        .draw-studio-head {
+            font-family: 'Jua', sans-serif; color: white; text-align: center; font-size: 1.2rem; margin: 2px 0 8px;
+        }
+        #draw-studio-stage {
+            flex: 1; min-height: 200px; background: #fff; border-radius: 18px; overflow: hidden; position: relative;
+        }
+        #draw-studio-canvas { width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; background: #fff; }
+        .draw-studio-actions .save { flex: 1; background: #48BB78; color: white; border: none; border-radius: 14px; padding: 14px; font-family: 'Jua', sans-serif; font-size: 1.05rem; cursor: pointer; }
+        .draw-studio-actions .quit { flex: 1; background: #718096; color: white; border: none; border-radius: 14px; padding: 14px; font-family: 'Jua', sans-serif; font-size: 1.05rem; cursor: pointer; }
 
         /* Modal Overlay */
         #modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
@@ -891,13 +916,13 @@
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 1</span><p>향로 맨 위 봉황의 턱밑을 자세히 쳐다보세요! 소원을 들어주는 이 구슬은? (초성: ㅇㅇㅈ)</p><input type="text" id="bm1" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm1', '여의주')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 2</span><p>향로 뚜껑에서 악기를 연주하는 5명의 아저씨가 모두 나오게 살짝 돌려가며 사진 찍어주세요!</p><label class="camera-btn" for="cam2">📷 사진 업로드</label><input type="file" id="cam2" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev2')"><div class="preview-box" id="prev2">사진이 표시됩니다</div></div>
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 3</span><p>박물관 설명판을 읽어보고 향로에 조각된 동물은 모두 몇 마리인지 적어보세요.</p><input type="text" id="bm3" placeholder="숫자 입력"><button class="action-btn" onclick="checkQuiz('bm3', '39')">정답 확인</button></div>
-        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 4</span><p>향로를 받치고 있는 용의 뿔이나 날카로운 발톱을 내 맘대로 더 무섭게 그려보세요!</p><canvas class="drawing-canvas" id="canvas4"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas4')">지우기</button></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 4</span><p>향로를 받치고 있는 용의 뿔이나 날카로운 발톱을 내 맘대로 더 무섭게 그려보세요!</p><div class="preview-box draw-preview" id="draw-prev-canvas4">아직 그린 그림이 없어요</div><button class="action-btn draw-open-btn" type="button" id="draw-btn-canvas4" onclick="openDrawStudio('canvas4', '용의 뿔과 발톱')">🎨 그림 그리기</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 5</span><p>박물관에서 향로 다음으로 내 마음에 쏙 드는 보물(그릇, 칼 등)을 찾아 사진 찍어 올려주세요!</p><label class="camera-btn" for="cam5">📷 사진 업로드</label><input type="file" id="cam5" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev5')"><div class="preview-box" id="prev5">사진이 표시됩니다</div></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 6</span><p>[백제문화단지] 사비궁 천정전 안의 왕의 의자 '어좌' 앞에서 늠름한 자세로 인증샷 찰칵!</p><label class="camera-btn" for="cam6">📷 사진 업로드</label><input type="file" id="cam6" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev6')"><div class="preview-box" id="prev6">사진이 표시됩니다</div></div>
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 7</span><p>사비궁 지붕 꼭대기 양쪽 끝을 올려다보세요. 화재를 막아주는 장식 기와 이름은? (초성: ㅊㅁ)</p><input type="text" id="bm7" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm7', '치미')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 8</span><p>능사 5층 목탑 지붕 모서리에 매달려 바람에 딸랑딸랑 소리 나는 종의 이름은? (초성: ㅍㄱ)</p><input type="text" id="bm8" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm8', '풍경')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 9</span><p>활쏘기(국궁) 체험장이나 생활문화마을에서 내가 씩씩하게 체험하는 모습을 사진으로 남기기!</p><label class="camera-btn" for="cam9">📷 사진 업로드</label><input type="file" id="cam9" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev9')"><div class="preview-box" id="prev9">사진이 표시됩니다</div></div>
-        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 10</span><p>황산벌에서 싸우던 장군의 갑옷에 나만의 멋진 황금색, 빨간색을 칠해 꾸며보세요!</p><canvas class="drawing-canvas" id="canvas10"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas10')">지우기</button></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 10</span><p>황산벌에서 싸우던 장군의 갑옷에 나만의 멋진 황금색, 빨간색을 칠해 꾸며보세요!</p><div class="preview-box draw-preview" id="draw-prev-canvas10">아직 그린 그림이 없어요</div><button class="action-btn draw-open-btn" type="button" id="draw-btn-canvas10" onclick="openDrawStudio('canvas10', '장군의 갑옷')">🎨 그림 그리기</button></div>
         <div class="mission-card"><span class="mission-badge">🏅 보너스 미션</span><p>[황포돛배] 우리가 타는 노란 돛 배의 이름은 무엇일까요? (초성: ㅎㅍㄷㅂ)</p><input type="text" id="bm_boat" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm_boat', '황포돛배')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 보너스 사진</span><p>배 위에서 노란 돛과 낙화암 절벽이 같이 나오게 사진 찍어 주세요! 구명조끼도 꼭 입은 채로!</p><label class="camera-btn" for="cam_boat">📷 사진 업로드</label><input type="file" id="cam_boat" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_boat')"><div class="preview-box" id="prev_boat">사진이 표시됩니다</div></div>
     </div>
@@ -972,14 +997,14 @@
 
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 1</span><p>모형관에서 재현해 놓은 무덤 벽! 연꽃무늬가 새겨진 흙을 구워 만든 이것은? (초성: ㅂㄷ)</p><input type="text" id="gm1" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm1', '벽돌')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 2</span><p>모형관 입구 무덤 수호신 '진묘수(석수)' 옆에서 똑같이 무서운 몬스터 표정 짓고 셀카 찍기!</p><label class="camera-btn" for="cam_g2">📷 사진 업로드</label><input type="file" id="cam_g2" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g2')"><div class="preview-box" id="prev_g2">사진이 표시됩니다</div></div>
-        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 3</span><p>왕비님이 베고 주무시던 '베개(두침)' 위에 그려진 새 두 마리를 나만의 색깔로 색칠해 주세요!</p><canvas class="drawing-canvas" id="canvas_g3"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas_g3')">지우기</button></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 3</span><p>왕비님이 베고 주무시던 '베개(두침)' 위에 그려진 새 두 마리를 나만의 색깔로 색칠해 주세요!</p><div class="preview-box draw-preview" id="draw-prev-canvas_g3">아직 그린 그림이 없어요</div><button class="action-btn draw-open-btn" type="button" id="draw-btn-canvas_g3" onclick="openDrawStudio('canvas_g3', '왕비의 베개 새')">🎨 그림 그리기</button></div>
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 4</span><p>무령왕릉 칼 손잡이 끝에 조각된 번쩍이는 동물은 무엇일까요? 환두( ? )도</p><input type="text" id="gm4" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm4', '용')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 5</span><p>모형관 밖 진짜 왕릉들이 둥글게 솟아있는 송산리 고분군 언덕을 등 뒤로 씩씩하게 브이(V) 포즈!</p><label class="camera-btn" for="cam_g5">📷 사진 업로드</label><input type="file" id="cam_g5" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g5')"><div class="preview-box" id="prev_g5">사진이 표시됩니다</div></div>
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 6</span><p>서쪽 문인 '금서루' 천장에 알록달록 화려하게 그려져 있는 동물의 이름은 무엇일까요?</p><input type="text" id="gm6" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm6', '호랑이')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 7</span><p>성곽길 깃발 중 내가 가장 좋아하는 색깔의 깃발(청,백,적,흑)을 하나 골라 깃발 아래서 찰칵!</p><label class="camera-btn" for="cam_g7">📷 사진 업로드</label><input type="file" id="cam_g7" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g7')"><div class="preview-box" id="prev_g7">사진이 표시됩니다</div></div>
         <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 8</span><p>남쪽을 지키는 붉은색 깃발에 그려진 상상 속 아름다운 불새 이름은? (초성: ㅈㅈ)</p><input type="text" id="gm8" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm8', '주작')">정답 확인</button></div>
         <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 9</span><p>성곽을 오르다 금강이 멋지게 펼쳐져 보이는 곳(공북루 등)에서 가족과 꼭 껴안고 다정하게 찰칵!</p><label class="camera-btn" for="cam_g9">📷 사진 업로드</label><input type="file" id="cam_g9" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g9')"><div class="preview-box" id="prev_g9">사진이 표시됩니다</div></div>
-        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 10</span><p>공산성을 지키던 군사들의 방패에 적군이 도망갈 만큼 무섭고 강력한 나만의 그림을 그려보세요!</p><canvas class="drawing-canvas" id="canvas_g10"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas_g10')">지우기</button></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 10</span><p>공산성을 지키던 군사들의 방패에 적군이 도망갈 만큼 무섭고 강력한 나만의 그림을 그려보세요!</p><div class="preview-box draw-preview" id="draw-prev-canvas_g10">아직 그린 그림이 없어요</div><button class="action-btn draw-open-btn" type="button" id="draw-btn-canvas_g10" onclick="openDrawStudio('canvas_g10', '성벽 방패')">🎨 그림 그리기</button></div>
     </div>
 
     <!-- 🏇 탭 4: 황산벌 돌파 -->
@@ -1074,8 +1099,27 @@
     </div>
 </div>
 
+<div id="draw-studio">
+    <div class="draw-studio-head" id="draw-studio-title">그림 그리기</div>
+    <div id="draw-studio-stage">
+        <canvas id="draw-studio-canvas"></canvas>
+    </div>
+    <div class="draw-colors" id="draw-colors"></div>
+    <div class="draw-sizes">
+        <button type="button" class="draw-size" data-size="4">가늘게</button>
+        <button type="button" class="draw-size selected" data-size="10">보통</button>
+        <button type="button" class="draw-size" data-size="18">굵게</button>
+        <button type="button" class="draw-size" data-size="28">아주 굵게</button>
+        <button type="button" class="draw-tool-btn eraser" id="draw-eraser">🧽 지우개</button>
+        <button type="button" class="draw-tool-btn" id="draw-clear">모두 지우기</button>
+    </div>
+    <div class="draw-studio-actions">
+        <button type="button" class="save" onclick="saveDrawStudio()">💾 저장</button>
+        <button type="button" class="quit" onclick="quitDrawStudio()">나가기</button>
+    </div>
+</div>
+
 <script>
-    const initedCanvases = new Set();
     const TOKEN_KEY = 'traver_token';
     const USERS_KEY = 'traver_users';
     const CURRENT_KEY = 'traver_current';
@@ -1088,6 +1132,11 @@
     let restoring = false;
     let saveTimer = null;
     let pendingDrawings = {};
+    let drawTargetId = null;
+    let drawColor = '#1A202C';
+    let drawBrush = 10;
+    let drawEraser = false;
+    let drawPainting = false;
 
     function resolveApiUrl() {
         if (window.TRAVER_API_URL) return String(window.TRAVER_API_URL).replace(/\/$/, '');
@@ -1139,17 +1188,8 @@
     function collectDrawings() {
         const drawings = {};
         CANVAS_IDS.forEach(id => {
-            const canvas = document.getElementById(id);
-            if (!canvas || !initedCanvases.has(id)) return;
-            try {
-                const empty = document.createElement('canvas');
-                empty.width = canvas.width;
-                empty.height = canvas.height;
-                if (canvas.toDataURL() === empty.toDataURL()) return;
-                drawings[id] = canvas.toDataURL('image/jpeg', 0.72);
-            } catch (err) {
-                console.warn('그림 저장 실패', err);
-            }
+            const img = document.querySelector('#draw-prev-' + id + ' img');
+            if (img && img.src && img.src.indexOf('data:') === 0) drawings[id] = img.src;
         });
         return drawings;
     }
@@ -1225,24 +1265,17 @@
 
     function restoreDrawings(drawings) {
         pendingDrawings = drawings || {};
-        CANVAS_IDS.forEach(tryRestoreCanvas);
+        CANVAS_IDS.forEach(function (id) {
+            if (pendingDrawings[id]) setDrawPreview(id, pendingDrawings[id]);
+        });
     }
 
-    function tryRestoreCanvas(id) {
-        const src = pendingDrawings[id];
-        if (!src) return;
-        if (!initedCanvases.has(id)) {
-            initCanvas(id);
-            return;
-        }
-        const canvas = document.getElementById(id);
-        if (!canvas) return;
-        const img = new Image();
-        img.onload = function () {
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        };
-        img.src = src;
+    function setDrawPreview(id, src) {
+        const box = document.getElementById('draw-prev-' + id);
+        const btn = document.getElementById('draw-btn-' + id);
+        if (box && src) box.innerHTML = '<img src="' + src + '">';
+        if (btn) btn.textContent = '✏️ 다시 그리기';
+        if (src) pendingDrawings[id] = src;
     }
 
     function cardKey(name, school) {
@@ -1421,14 +1454,6 @@
 
         if (tabId === 'hwangsan') HwangsanGame.onShow();
         if (tabId === 'gongsan') GongsanGame.onShow();
-        if (tabId === 'buyeo') {
-            initCanvas('canvas4');
-            initCanvas('canvas10');
-        }
-        if (tabId === 'gongju') {
-            initCanvas('canvas_g3');
-            initCanvas('canvas_g10');
-        }
     }
 
     function canEmbedYouTube() {
@@ -1556,52 +1581,138 @@
         });
     }
 
-    function initCanvas(canvasId) {
-        const canvas = document.getElementById(canvasId);
-        if(!canvas || initedCanvases.has(canvasId)) return;
-        const parentWidth = canvas.parentElement.clientWidth - 40;
-        if (parentWidth < 50) return;
-
+    function initDrawStudio() {
+        const canvas = document.getElementById('draw-studio-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = parentWidth;
-        canvas.height = 180;
-        ctx.strokeStyle = "#4D96FF";
-        ctx.lineWidth = 5;
-        ctx.lineCap = "round";
+        const colors = ['#1A202C', '#E53E3E', '#DD6B20', '#D69E2E', '#38A169', '#3182CE', '#805AD5', '#D53F8C', '#C05621', '#FFFFFF'];
+        const colorBox = document.getElementById('draw-colors');
+        colors.forEach(function (hex, i) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'draw-color' + (i === 0 ? ' selected' : '');
+            btn.style.background = hex;
+            if (hex === '#FFFFFF') btn.style.borderColor = '#A0AEC0';
+            btn.onclick = function () { setDrawColor(hex, btn); };
+            colorBox.appendChild(btn);
+        });
+        document.querySelectorAll('.draw-size').forEach(function (btn) {
+            btn.onclick = function () {
+                drawBrush = Number(btn.getAttribute('data-size'));
+                drawEraser = false;
+                document.querySelectorAll('.draw-size').forEach(function (b) { b.classList.remove('selected'); });
+                btn.classList.add('selected');
+                document.getElementById('draw-eraser').classList.remove('selected');
+            };
+        });
+        document.getElementById('draw-eraser').onclick = function () {
+            drawEraser = !drawEraser;
+            this.classList.toggle('selected', drawEraser);
+        };
+        document.getElementById('draw-clear').onclick = function () {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        };
 
-        let painting = false;
-
-        function startPosition(e) { painting = true; draw(e); }
-        function endPosition() { painting = false; ctx.beginPath(); scheduleSave(); }
-        function draw(e) {
-            if(!painting) return;
-            e.preventDefault();
+        function pos(e) {
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            const src = (e.touches && e.touches[0]) || e;
+            return {
+                x: (src.clientX - rect.left) * (canvas.width / rect.width),
+                y: (src.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+        function start(e) {
+            e.preventDefault();
+            drawPainting = true;
+            const p = pos(e);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            drawTo(p);
+        }
+        function move(e) {
+            if (!drawPainting) return;
+            e.preventDefault();
+            drawTo(pos(e));
+        }
+        function end(e) {
+            if (e) e.preventDefault();
+            drawPainting = false;
+            ctx.beginPath();
+        }
+        function drawTo(p) {
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = drawBrush;
+            ctx.globalCompositeOperation = drawEraser ? 'destination-out' : 'source-over';
+            ctx.strokeStyle = drawColor;
+            ctx.lineTo(p.x, p.y);
             ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+            ctx.moveTo(p.x, p.y);
         }
-
-        canvas.addEventListener('mousedown', startPosition);
-        canvas.addEventListener('mouseup', endPosition);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startPosition);
-        canvas.addEventListener('touchend', endPosition);
-        canvas.addEventListener('touchmove', draw);
-        initedCanvases.add(canvasId);
-        tryRestoreCanvas(canvasId);
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        canvas.addEventListener('touchstart', start, { passive: false });
+        canvas.addEventListener('touchmove', move, { passive: false });
+        canvas.addEventListener('touchend', end);
+        canvas.addEventListener('touchcancel', end);
     }
 
-    function clearCanvas(canvasId) {
-        const canvas = document.getElementById(canvasId);
+    function setDrawColor(hex, btn) {
+        drawColor = hex;
+        drawEraser = false;
+        document.querySelectorAll('.draw-color').forEach(function (b) { b.classList.remove('selected'); });
+        if (btn) btn.classList.add('selected');
+        document.getElementById('draw-eraser').classList.remove('selected');
+    }
+
+    function sizeDrawCanvas() {
+        const canvas = document.getElementById('draw-studio-canvas');
+        const stage = document.getElementById('draw-studio-stage');
+        const w = Math.max(280, stage.clientWidth);
+        const h = Math.max(220, stage.clientHeight);
+        canvas.width = w;
+        canvas.height = h;
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (pendingDrawings) delete pendingDrawings[canvasId];
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+        ctx.globalCompositeOperation = 'source-over';
+    }
+
+    function openDrawStudio(id, title) {
+        drawTargetId = id;
+        document.getElementById('draw-studio-title').textContent = '🎨 ' + title;
+        document.getElementById('draw-studio').classList.add('open');
+        document.body.style.overflow = 'hidden';
+        requestAnimationFrame(function () {
+            sizeDrawCanvas();
+            const src = pendingDrawings[id] || ((document.querySelector('#draw-prev-' + id + ' img') || {}).src);
+            if (src && String(src).indexOf('data:') === 0) {
+                const canvas = document.getElementById('draw-studio-canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = function () {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = src;
+            }
+        });
+    }
+
+    function saveDrawStudio() {
+        const canvas = document.getElementById('draw-studio-canvas');
+        const src = canvas.toDataURL('image/jpeg', 0.82);
+        if (drawTargetId) setDrawPreview(drawTargetId, src);
         scheduleSave();
+        quitDrawStudio();
+    }
+
+    function quitDrawStudio() {
+        document.getElementById('draw-studio').classList.remove('open');
+        document.body.style.overflow = '';
+        drawPainting = false;
+        drawTargetId = null;
     }
 
     /* ========== 황산벌 돌파 게임 ========== */
@@ -2439,6 +2550,7 @@
         if (el) el.addEventListener('change', scheduleSave);
     });
     window.addEventListener('pagehide', saveProgress);
+    initDrawStudio();
 </script>
 
 </body>
