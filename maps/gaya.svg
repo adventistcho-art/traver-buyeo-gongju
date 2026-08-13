@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 480" role="img" aria-label="가야 연맹 지도">
+  <rect width="420" height="480" fill="#E8F4FC"/>
+  <text x="210" y="28" text-anchor="middle" font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="18" font-weight="800" fill="#2C3E50">가야 연맹 지도</text>
+  <text x="210" y="50" text-anchor="middle" font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="12" fill="#718096">낙동강 근처에 여러 작은 나라가 모여 있었어요</text>
+  <path d="M70 90 C140 70 250 80 330 140 C360 200 350 300 300 370 C250 430 160 440 110 390 C70 340 50 220 70 90 Z" fill="#F7FAFC" stroke="#CBD5E0" stroke-width="3"/>
+  <path d="M240 100 C230 160 220 220 200 280 C185 330 175 370 190 410" fill="none" stroke="#4D96FF" stroke-width="7" stroke-linecap="round" opacity="0.55"/>
+  <text x="250" y="250" font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="13" font-weight="700" fill="#2B6CB0" transform="rotate(72 250 250)">낙동강</text>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" text-anchor="middle" font-weight="800">
+    <ellipse cx="255" cy="355" rx="52" ry="38" fill="#9AE6B4"/>
+    <text x="255" y="350" font-size="15" fill="#22543D">금관가야</text>
+    <text x="255" y="368" font-size="12" fill="#2F855A">김해</text>
+    <ellipse cx="175" cy="250" rx="50" ry="36" fill="#68D391"/>
+    <text x="175" y="245" font-size="15" fill="#22543D">대가야</text>
+    <text x="175" y="263" font-size="12" fill="#2F855A">고령</text>
+    <ellipse cx="155" cy="330" rx="44" ry="32" fill="#C6F6D5"/>
+    <text x="155" y="326" font-size="14" fill="#22543D">아라가야</text>
+    <text x="155" y="343" font-size="12" fill="#2F855A">함안</text>
+    <ellipse cx="210" cy="400" rx="42" ry="30" fill="#B2F5EA"/>
+    <text x="210" y="396" font-size="14" fill="#234E52">소가야</text>
+    <text x="210" y="413" font-size="12" fill="#319795">고성</text>
+    <ellipse cx="300" cy="280" rx="40" ry="28" fill="#FC8181" opacity="0.85"/>
+    <text x="300" y="276" font-size="14" fill="#742A2A">신라</text>
+    <text x="300" y="293" font-size="11" fill="#9B2C2C">경주</text>
+    <ellipse cx="95" cy="220" rx="42" ry="30" fill="#F6AD55" opacity="0.9"/>
+    <text x="95" y="216" font-size="14" fill="#7B341E">백제</text>
+    <text x="95" y="233" font-size="11" fill="#9C4221">부여 쪽</text>
+  </g>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="12" fill="#4A5568">
+    <circle cx="40" cy="458" r="6" fill="#68D391"/>
+    <text x="52" y="462">가야</text>
+    <circle cx="120" cy="458" r="6" fill="#F6AD55"/>
+    <text x="132" y="462">백제</text>
+    <circle cx="200" cy="458" r="6" fill="#FC8181"/>
+    <text x="212" y="462">신라</text>
+  </g>
+</svg>

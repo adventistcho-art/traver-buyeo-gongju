@@ -2,3 +2,12 @@
 .DS_Store
 Thumbs.db
 *.log
+node_modules
+web/.next
+api/dist
+api/prisma/dev.db
+api/prisma/dev.db-journal
+api/.env
+web/public/app.html
+web/public/images
+web/public/maps

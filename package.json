@@ -1,0 +1,9 @@
+{
+  "name": "traver-buyeo-gongju",
+  "private": true,
+  "scripts": {
+    "dev:api": "npm run start:dev --prefix api",
+    "dev:web": "npm run dev --prefix web",
+    "db:push": "npm exec --prefix api -- prisma db push"
+  }
+}

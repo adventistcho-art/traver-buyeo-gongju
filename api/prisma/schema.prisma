@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  school    String
+  age       Int?
+  password  String
+  progress  Progress?
+  createdAt DateTime  @default(now())
+
+  @@unique([name, school])
+}
+
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastTab   String   @default("story")
+  lastAct   String   @default("act1")
+  quizzes   String   @default("{}")
+  journals  String   @default("{}")
+  viewed    String   @default("[]")
+  updatedAt DateTime @updatedAt
+}

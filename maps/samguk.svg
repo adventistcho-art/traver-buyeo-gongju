@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 560" role="img" aria-label="삼국시대 지도">
+  <rect width="420" height="560" fill="#E8F4FC"/>
+  <text x="210" y="28" text-anchor="middle" font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="18" font-weight="800" fill="#2C3E50">삼국시대 지도</text>
+  <ellipse cx="70" cy="300" rx="40" ry="18" fill="#BEE3F8" opacity="0.8"/>
+  <ellipse cx="360" cy="260" rx="36" ry="16" fill="#BEE3F8" opacity="0.8"/>
+  <path d="M95 70 C150 35 250 40 295 95 C310 140 300 190 270 230 C230 255 175 250 135 225 C95 195 75 145 80 105 C82 88 88 76 95 70 Z" fill="#FC8181"/>
+  <path d="M108 250 C145 235 185 250 200 295 C205 340 185 395 155 430 C125 450 95 430 88 385 C80 330 90 275 108 250 Z" fill="#F6AD55"/>
+  <path d="M215 265 C255 250 300 270 318 320 C328 370 310 430 270 465 C235 480 205 450 200 400 C195 345 200 290 215 265 Z" fill="#63B3ED"/>
+  <path d="M175 400 C205 390 235 405 245 435 C240 460 210 475 185 468 C160 455 158 420 175 400 Z" fill="#68D391"/>
+  <ellipse cx="155" cy="520" rx="28" ry="14" fill="#D6BCFA"/>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="190" y="140" font-size="28" fill="#9B2C2C">고구려</text>
+    <text x="145" y="330" font-size="24" fill="#9C4221">백제</text>
+    <text x="265" y="355" font-size="24" fill="#2B6CB0">신라</text>
+    <text x="210" y="442" font-size="18" fill="#276749">가야</text>
+    <text x="155" y="524" font-size="12" fill="#553C9A">탐라</text>
+  </g>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="11" font-weight="700">
+    <circle cx="168" cy="278" r="5" fill="#C53030"/>
+    <text x="176" y="274" fill="#2D3748">한성(서울)</text>
+    <circle cx="132" cy="355" r="5" fill="#C53030"/>
+    <text x="140" y="351" fill="#2D3748">웅진(공주)</text>
+    <circle cx="118" cy="400" r="5" fill="#C53030"/>
+    <text x="126" y="396" fill="#2D3748">사비(부여)</text>
+    <circle cx="278" cy="400" r="5" fill="#2B6CB0"/>
+    <text x="286" y="396" fill="#2D3748">서라벌(경주)</text>
+    <circle cx="210" cy="175" r="5" fill="#9B2C2C"/>
+    <text x="218" y="171" fill="#2D3748">평양</text>
+  </g>
+  <g font-family="Malgun Gothic, Apple SD Gothic Neo, Pretendard, sans-serif" font-size="12" fill="#4A5568">
+    <rect x="24" y="538" width="12" height="12" rx="2" fill="#FC8181"/>
+    <text x="40" y="548">고구려</text>
+    <rect x="108" y="538" width="12" height="12" rx="2" fill="#F6AD55"/>
+    <text x="124" y="548">백제</text>
+    <rect x="184" y="538" width="12" height="12" rx="2" fill="#63B3ED"/>
+    <text x="200" y="548">신라</text>
+    <rect x="256" y="538" width="12" height="12" rx="2" fill="#68D391"/>
+    <text x="272" y="548">가야</text>
+  </g>
+</svg>
