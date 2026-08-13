@@ -18,10 +18,10 @@ export class RegisterDto {
   @Min(1)
   age?: number;
 
+  @IsOptional()
   @IsString()
-  @MinLength(4)
   @MaxLength(64)
-  password: string;
+  password?: string;
 }
 
 export class LoginDto {
@@ -33,7 +33,8 @@ export class LoginDto {
   @MinLength(1)
   school: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(4)
-  password: string;
+  @MaxLength(64)
+  password?: string;
 }

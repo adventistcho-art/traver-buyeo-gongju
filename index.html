@@ -381,7 +381,7 @@
         <div class="onboarding-card">
             <span style="font-size: 3.5rem;">🎒</span>
             <h2>백제 비밀 탐험대</h2>
-            <p>나만의 탐험대원 카드를 만들어주세요!<br><span style="font-size:0.9rem;color:#718096;">한 번 만들면 다음에 이름·학교·비밀번호로 이어서 탐험할 수 있어요.</span></p>
+            <p>나만의 탐험대원 카드를 만들어주세요!<br><span style="font-size:0.9rem;color:#718096;">한 번 만들면 다음에 이름과 학교만 넣으면 이어서 탐험할 수 있어요.</span></p>
             <div class="input-group">
                 <label>👤 탐험대원 이름</label>
                 <input type="text" id="user-name" placeholder="예: 홍길동" autocomplete="username">
@@ -393,10 +393,6 @@
             <div class="input-group">
                 <label>🏫 학교</label>
                 <input type="text" id="user-school" placeholder="다니는 초등학교">
-            </div>
-            <div class="input-group">
-                <label>🔑 비밀번호 (4자리 이상)</label>
-                <input type="password" id="user-password" placeholder="다음에 이어서 할 때 필요해요" autocomplete="current-password">
             </div>
             <button class="start-btn" onclick="startAdventure()">🚀 탐험 출발하기!</button>
             <button class="start-btn" type="button" onclick="loginAdventure()" style="margin-top:10px;background:#4D96FF;">🔁 예전에 만든 카드로 이어가기</button>
@@ -1222,8 +1218,7 @@
         return {
             name: document.getElementById('user-name').value.trim(),
             school: document.getElementById('user-school').value.trim(),
-            age: Number(document.getElementById('user-age').value) || undefined,
-            password: document.getElementById('user-password').value
+            age: Number(document.getElementById('user-age').value) || undefined
         };
     }
 
@@ -1233,17 +1228,13 @@
             alert("이름과 학교를 입력해 주세요!");
             return;
         }
-        if (!card.password || card.password.length < 4) {
-            alert("비밀번호를 4자리 이상 정해 주세요. 다음에 이어서 탐험할 때 필요해요!");
-            return;
-        }
         try {
             const data = await api('POST', '/auth/register', card);
             localStorage.setItem(TOKEN_KEY, data.token);
             enterApp(data.user);
         } catch (err) {
             const msg = err.message || '';
-            if (msg.includes('이미 만든') || msg.includes('이어가기') || msg.includes('4자리')) {
+            if (msg.includes('이미 만든') || msg.includes('이어가기')) {
                 alert(msg);
                 return;
             }
@@ -1254,21 +1245,20 @@
 
     async function loginAdventure() {
         const card = readCard();
-        if (!card.name || !card.school || !card.password) {
-            alert("이름, 학교, 비밀번호를 모두 입력해 주세요!");
+        if (!card.name || !card.school) {
+            alert("이름과 학교를 입력해 주세요!");
             return;
         }
         try {
             const data = await api('POST', '/auth/login', {
                 name: card.name,
-                school: card.school,
-                password: card.password
+                school: card.school
             });
             localStorage.setItem(TOKEN_KEY, data.token);
             const progress = await api('GET', '/progress');
             enterApp(data.user, progress);
         } catch (err) {
-            alert(err.message || "로그인하지 못했어요. 이름·학교·비밀번호를 확인해 주세요.");
+            alert(err.message || "로그인하지 못했어요. 이름과 학교를 확인해 주세요.");
         }
     }
 

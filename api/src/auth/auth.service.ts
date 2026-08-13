@@ -31,7 +31,7 @@ export class AuthService {
         name,
         school,
         age: dto.age ?? null,
-        password: await bcrypt.hash(dto.password, 10),
+        password: await bcrypt.hash(dto.password || '', 10),
         progress: { create: {} },
       },
     });
@@ -44,8 +44,8 @@ export class AuthService {
         name_school: { name: dto.name.trim(), school: dto.school.trim() },
       },
     });
-    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
-      throw new UnauthorizedException('이름·학교·비밀번호를 다시 확인해 주세요.');
+    if (!user) {
+      throw new UnauthorizedException('이름과 학교를 다시 확인해 주세요.');
     }
     return this.issue(user);
   }
