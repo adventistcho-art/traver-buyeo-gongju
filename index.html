@@ -1262,17 +1262,6 @@
         }
     }
 
-    async function bootSavedSession() {
-        if (!localStorage.getItem(TOKEN_KEY)) return;
-        try {
-            const user = await api('GET', '/auth/me');
-            const progress = await api('GET', '/progress');
-            enterApp(user, progress);
-        } catch {
-            localStorage.removeItem(TOKEN_KEY);
-        }
-    }
-
     function switchTab(tabId, btnElement) {
         HwangsanGame.pause();
         GongsanGame.pause();
@@ -2285,7 +2274,6 @@
         if (el) el.addEventListener('change', scheduleSave);
     });
     window.addEventListener('pagehide', saveProgress);
-    bootSavedSession();
 </script>
 
 </body>
