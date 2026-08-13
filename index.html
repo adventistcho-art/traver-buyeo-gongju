@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>👑 백제 비밀 탐험대</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4D96FF;
+            --highlight: #FFD93D;
+            --bg-color: #F7F9FC;
+            --card-bg: #FFFFFF;
+            --text-dark: #2C3E50;
+        }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #E4E9F2;
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            line-height: 1.7;
+        }
+        .app-frame {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.15);
+            position: relative;
+            padding-bottom: 90px;
+            overflow-x: hidden;
+        }
+
+        /* 1. 온보딩 화면 */
+        #onboarding-screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #FF6B6B, #4D96FF);
+            z-index: 1000; display: flex; justify-content: center; align-items: center; padding: 20px;
+            transition: transform 0.5s ease-in-out;
+        }
+        .onboarding-card {
+            background: white; width: 100%; max-width: 360px; padding: 30px; border-radius: 30px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .onboarding-card h2 { font-family: 'Jua', sans-serif; color: var(--primary); font-size: 1.8rem; margin: 10px 0; }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; color: #555; }
+        .input-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 12px; font-size: 1rem; box-sizing: border-box; }
+        .start-btn {
+            width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 15px;
+            font-size: 1.1rem; font-family: 'Jua', sans-serif; cursor: pointer; box-shadow: 0 4px 10px rgba(255,107,107,0.4); margin-top: 10px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53); color: white; padding: 25px 20px;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; box-shadow: 0 4px 15px rgba(255,107,107,0.2);
+        }
+        header h1 { font-family: 'Jua', sans-serif; margin: 0; font-size: 1.5rem; }
+        header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; }
+
+        /* Navigation Tabs */
+        .bottom-tab-bar {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around;
+            padding: 8px 2px 16px 2px; border-top: 1px solid #eee; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 500;
+        }
+        .tab-btn {
+            background: none; border: none; text-align: center; cursor: pointer; font-family: 'Pretendard', sans-serif;
+            color: #888; font-size: 0.65rem; font-weight: 600; transition: all 0.2s;
+            flex: 1; min-width: 0; padding: 0 2px; line-height: 1.2;
+        }
+        .tab-btn .icon { font-size: 1.15rem; display: block; margin-bottom: 2px; }
+        .tab-btn.active { color: var(--primary); transform: translateY(-3px); }
+
+        /* Content Sections & Cards */
+        .tab-content { display: none; padding: 20px; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .act-nav {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+            position: sticky; top: 0; z-index: 40;
+            background: var(--bg-color); padding: 8px 0 10px;
+        }
+        .act-btn {
+            flex: 1 1 18%; border: none; border-radius: 14px; padding: 8px 2px;
+            font-family: 'Jua', sans-serif; font-size: 0.68rem;
+            background: #E2E8F0; color: #4A5568; cursor: pointer; line-height: 1.3;
+            min-width: 0;
+        }
+        .king-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
+        .king-chip {
+            background: #fff; border: 2px solid #FED7D7; color: #C53030;
+            border-radius: 999px; padding: 5px 10px; font-size: 0.78rem; font-weight: 800;
+        }
+        .act-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(255,107,107,0.35); }
+        .act-section { display: none; }
+        .act-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        .fact-box {
+            background: #FFF8E1; border-left: 5px solid var(--highlight);
+            border-radius: 14px; padding: 12px 14px; margin: 14px 0;
+            font-size: 0.95rem; color: #5D4037;
+        }
+        .fact-box strong { color: #E65100; }
+        .img-caption, .video-caption {
+            font-size: 0.78rem; color: #718096; text-align: center;
+            margin: -4px 0 14px; line-height: 1.4;
+        }
+        .video-caption { margin-top: -6px; }
+        .year-chip {
+            display: inline-block; background: #EBF8FF; color: #2B6CB0;
+            font-weight: 800; font-size: 0.8rem; padding: 4px 10px;
+            border-radius: 999px; margin-bottom: 10px;
+        }
+
+        .card {
+            background: var(--card-bg); border-radius: 24px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.03);
+        }
+        .card h2 { font-family: 'Jua', sans-serif; color: var(--primary); font-size: 1.4rem; margin-top: 0; }
+        .card h3 { font-size: 1.15rem; color: var(--secondary); margin: 20px 0 10px; font-weight: 700; border-bottom: 2px dashed #eee; padding-bottom: 5px;}
+        .card p { font-size: 1rem; margin-bottom: 12px; color: #4A5568; }
+
+        img.content-img { width: 100%; border-radius: 16px; margin: 12px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); object-fit: cover; }
+        .video-wrapper, .yt-embed {
+            position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden;
+            margin: 15px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #111;
+        }
+        .video-wrapper iframe, .yt-embed iframe, .yt-facade {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+        }
+        .yt-facade {
+            display: block; padding: 0; cursor: pointer; background: #111; color: inherit;
+        }
+        .yt-facade img { width: 100%; height: 100%; object-fit: cover; }
+        .yt-play-btn {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 68px; height: 48px; background: #FF0000; color: #fff; border-radius: 14px;
+            font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        }
+        .yt-facade:hover .yt-play-btn { background: #cc0000; transform: translate(-50%, -50%) scale(1.06); }
+
+        /* Modal Trigger */
+        .modal-trigger {
+            background: linear-gradient(to top, var(--highlight) 40%, transparent 40%);
+            font-weight: 700; cursor: pointer; padding: 0 3px; border-radius: 4px; transition: background 0.2s;
+        }
+        .modal-trigger:hover { background: var(--highlight); }
+
+        /* Journal Card */
+        .journal-card {
+            background-color: #FFF9C4; border-radius: 20px; padding: 18px; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px dashed #F57F17;
+            background-image: repeating-linear-gradient(transparent, transparent 27px, #FFE082 28px);
+        }
+        .journal-title { font-family: 'Jua', sans-serif; color: #F57F17; margin-top: 0; font-size: 1.2rem; margin-bottom: 12px; }
+        .journal-row { margin-bottom: 12px; font-size: 0.95rem; font-weight: 600; color: #5D4037; }
+        .journal-row input[type="date"], .journal-row input[type="text"] { width: 100%; padding: 10px; border: 1px solid #C7B198; border-radius: 8px; background: white; margin-top: 4px; box-sizing: border-box; }
+        .weather-selector { display: flex; gap: 8px; margin-top: 4px; }
+        .weather-selector label { flex: 1; text-align: center; padding: 8px; background: white; border: 1px solid #C7B198; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+        .weather-selector input { display: none; }
+        .weather-selector input:checked + span { color: #D84315; font-weight: bold; }
+
+        /* Mission Cards */
+        .mission-card { background: #FFF; border: 2px solid #E2E8F0; border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .mission-badge { display: inline-block; background: #EBF8FF; color: #3182CE; font-weight: 700; font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; margin-bottom: 10px; }
+        .mission-badge.photo { background: #FEFCBF; color: #B7791F; }
+        .mission-badge.drawing { background: #FED7D7; color: #C53030; }
+        .mission-card p { font-weight: 600; font-size: 1rem; margin: 5px 0 15px; }
+        .mission-card input[type="text"] { width: 100%; padding: 12px; border: 2px solid #CBD5E0; border-radius: 10px; font-size: 1rem; box-sizing: border-box; margin-bottom: 10px; }
+        .action-btn { width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .camera-btn { display: block; width: 100%; padding: 14px; background: #48BB78; color: white; text-align: center; border-radius: 10px; font-weight: bold; cursor: pointer; box-sizing: border-box; font-size: 1rem;}
+        .preview-box { width: 100%; height: 160px; border: 2px dashed #CBD5E0; border-radius: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: center; color: #A0AEC0; font-size: 0.9rem; background: #F8FAFC; overflow: hidden; }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .drawing-canvas { width: 100%; height: 200px; background: #F7FAFC; border: 2px solid #CBD5E0; border-radius: 10px; cursor: crosshair; touch-action: none; }
+
+        /* Modal Overlay */
+        #modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal-card { background: white; width: 100%; max-width: 340px; border-radius: 24px; padding: 20px; text-align: center; animation: popUp 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 14px; margin-bottom: 15px; }
+        .modal-card h3 { color: var(--primary); margin: 5px 0; font-family: 'Jua', sans-serif; font-size: 1.3rem;}
+        .modal-card p { font-size: 1rem; line-height: 1.6; color: #444; }
+        .close-modal { background: #718096; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; margin-top: 15px; cursor: pointer; width: 100%; font-size: 1rem;}
+
+        /* ===== 게임 탭 공통 ===== */
+        .game-panel {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        .game-header-title {
+            font-family: 'Jua', sans-serif;
+            color: var(--primary);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .game-header-desc {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #4A5568;
+            margin-bottom: 15px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+        .game-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 20;
+        }
+        .game-overlay h2 {
+            font-family: 'Jua', sans-serif;
+            font-size: 1.8rem;
+            margin: 0 0 12px 0;
+            color: #FFD93D;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .game-start-screen {
+            background: rgba(255, 255, 255, 0.85);
+            display: flex;
+        }
+        .game-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Jua', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+        }
+        .game-btn:active { transform: scale(0.95); }
+        .game-btn.secondary {
+            background: var(--secondary);
+            box-shadow: 0 4px 10px rgba(77,150,255,0.4);
+        }
+
+        /* 황산벌 돌파 */
+        #tab-hwangsan .hsan-game-container {
+            width: 100%;
+            position: relative;
+            background: #87CEEB;
+            border: 4px solid #CBD5E0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-sizing: border-box;
+            touch-action: none;
+        }
+        #tab-hwangsan .hsan-game-container canvas {
+            display: block;
+            width: 100%;
+        }
+        #tab-hwangsan .hsan-score-board {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-family: 'Jua', sans-serif;
+            font-size: 1.3rem;
+            color: #2D3748;
+            z-index: 10;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.7);
+        }
+        #tab-hwangsan .hsan-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        #tab-hwangsan .hsan-control-btn {
+            flex: 1;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 16px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        #tab-hwangsan .btn-jump { background-color: var(--secondary); box-shadow: 0 6px 0 #3182CE; }
+        #tab-hwangsan .btn-jump:active { transform: translateY(6px); box-shadow: 0 0px 0 #3182CE; }
+        #tab-hwangsan .btn-duck { background-color: #48BB78; box-shadow: 0 6px 0 #2F855A; }
+        #tab-hwangsan .btn-duck:active { transform: translateY(6px); box-shadow: 0 0px 0 #2F855A; }
+
+        /* 공산성 지키기 */
+        #tab-gongsan .gsan-game-container {
+            width: 100%;
+            position: relative;
+            background: #EBF8FF;
+            border: 4px solid #CBD5E0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-sizing: border-box;
+            touch-action: none;
+        }
+        #tab-gongsan .gsan-game-container canvas {
+            display: block;
+            width: 100%;
+            background: linear-gradient(to bottom, #A0C4FF 0%, #E2F0CB 100%);
+            cursor: crosshair;
+        }
+        #tab-gongsan .gsan-top-ui {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Jua', sans-serif;
+            font-size: 1rem;
+            color: #2D3748;
+            text-shadow: 1px 1px 2px white;
+            z-index: 5;
+        }
+        #tab-gongsan .gsan-sub-ui {
+            position: absolute;
+            top: 35px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Jua', sans-serif;
+            font-size: 0.85rem;
+            color: #805AD5;
+            z-index: 5;
+            text-shadow: 1px 1px 2px white;
+        }
+        #tab-gongsan .difficulty-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #tab-gongsan .diff-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Jua', sans-serif;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background: #CBD5E0;
+            color: #2D3748;
+        }
+        #tab-gongsan .diff-btn.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(255,107,107,0.4);
+        }
+        #tab-gongsan #gsan-startScreen { display: flex; }
+        #tab-gongsan #gsan-gameOverScreen { display: none; }
+        #tab-gongsan #gsan-bossWarning { color: red; display: none; }
+        #tab-gongsan .gsan-start-screen {
+            background: rgba(0, 0, 0, 0.75);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-frame">
+    <!-- 1. 온보딩 화면 -->
+    <div id="onboarding-screen">
+        <div class="onboarding-card">
+            <span style="font-size: 3.5rem;">🎒</span>
+            <h2>백제 비밀 탐험대</h2>
+            <p>나만의 탐험대원 카드를 만들어주세요!</p>
+            <div class="input-group">
+                <label>👤 탐험대원 이름</label>
+                <input type="text" id="user-name" placeholder="예: 홍길동">
+            </div>
+            <div class="input-group">
+                <label>🎂 나이</label>
+                <input type="number" id="user-age" placeholder="예: 8">
+            </div>
+            <div class="input-group">
+                <label>🏫 학교</label>
+                <input type="text" id="user-school" placeholder="다니는 초등학교">
+            </div>
+            <button class="start-btn" onclick="startAdventure()">🚀 탐험 출발하기!</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <h1 id="header-title">👑 백제 비밀 탐험록</h1>
+        <p id="header-sub">준비된 탐험대원, 출발합니다!</p>
+    </header>
+
+    <!-- 📖 탭 1: 백제 이야기 (1~5막) -->
+    <div id="tab-story" class="tab-content active">
+        <div class="act-nav">
+            <button class="act-btn active" onclick="switchAct('act1', this)">🗺️ 1막<br>한성</button>
+            <button class="act-btn" onclick="switchAct('act2', this)">🏰 2막<br>웅진·사비</button>
+            <button class="act-btn" onclick="switchAct('act3', this)">⚔️ 3막<br>황산벌</button>
+            <button class="act-btn" onclick="switchAct('act4', this)">👑 4막<br>백제의 왕</button>
+            <button class="act-btn" onclick="switchAct('act5', this)">🌍 5막<br>다른 나라</button>
+        </div>
+
+        <!-- ===== 제1막 ===== -->
+        <div id="act1" class="act-section active">
+            <div class="card">
+                <span class="year-chip">B.C. 18 ~ A.D. 475 · 한성 백제</span>
+                <h2>🗺️ 제1막: 한강의 황금 나라</h2>
+                <p>옛날 옛적, 우리나라에는 고구려·백제·신라 세 나라가 사이좋게… 아니, 가끔은 으르렁거리며 살았어요. 이것을 <span class="modal-trigger" onclick="openModal('삼국시대', '고구려·백제·신라가 한반도에서 함께 있던 시기예요. 백제는 처음엔 한강 근처(서울)에 수도를 두었어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Three_Kingdoms_of_Korea_Map.png?width=800')">삼국시대</span>라고 불러요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Three_Kingdoms_of_Korea_Map.png?width=800" class="content-img" alt="삼국시대 지도">
+                <p class="img-caption">5세기 무렵 삼국 지도. 아래쪽이 백제, 위쪽이 고구려, 오른쪽이 신라예요.</p>
+                <p>백제는 지금 서울, <span class="modal-trigger" onclick="openModal('한강', '서울을 가로지르는 큰 강이에요. 배가 다니기 좋아 백제 사람들이 중국·일본과 물건을 사고팔았어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Han%20River%2C%20Seoul%20%2849531954927%29.jpg?width=800')">한강</span> 근처에서 나라를 세웠어요. 한강은 물이 깊고 넓어서 커다란 배가 둥둥 떠다니며 장사하기 딱 좋았답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Han%20River%2C%20Seoul%20%2849531954927%29.jpg?width=800" class="content-img" alt="서울 한강">
+                <p class="img-caption">오늘날의 한강. 1,500년 전에도 백제 배들이 이 강을 오갔어요.</p>
+            </div>
+
+            <div class="card">
+                <h2>🏰 첫 수도, 위례성을 찾아라!</h2>
+                <p>백제의 첫 수도는 <span class="modal-trigger" onclick="openModal('위례성(한성)', '백제가 처음 세운 수도예요. 학자들은 서울 풍납토성과 몽촌토성이 그 자리라고 보고 있어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Pungnap-dong%20Toseong-1.JPG?width=800')">위례성(한성)</span>이에요. 흙을 겹겹이 다져 쌓은 거대한 성벽이 한강을 지키듯 서 있었죠.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Pungnap-dong%20Toseong-1.JPG?width=800" class="content-img" alt="풍납토성">
+                <p class="img-caption">서울 송파구 <b>풍납토성</b>. 백제의 첫 왕성(하남 위례성)으로 여겨져요.</p>
+                <p>성벽은 원래 둘레가 약 3.5km나 되는 한반도 최대급 흙성이었어요. 진흙과 모래를 번갈아 다지는 <span class="modal-trigger" onclick="openModal('판축', '흙을 켜켜이 쌓아 단단하게 다지는 건축 방법이에요. 풍납토성 벽은 아래가 40m가 넘을 정도로 두꺼웠대요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Pungnap%20Toseong%20winter.jpg?width=800')">판축</span> 기술로 쌓았답니다. 옆동네 <span class="modal-trigger" onclick="openModal('몽촌토성', '올림픽공원 안에 있는 백제 토성이에요. 풍납토성과 함께 한성 백제의 도성을 이루었어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Mongchon%20Toseong-1.JPG?width=800')">몽촌토성</span>은 언덕을 이용해 만든 남성(南城)이에요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Mongchon%20Toseong-1.JPG?width=800" class="content-img" alt="몽촌토성">
+                <p class="img-caption">올림픽공원 안의 <b>몽촌토성</b>. 산책로가 옛 성벽을 따라가요.</p>
+                <div class="fact-box">🔍 <strong>탐험 포인트</strong><br>풍납토성 안에서는 왕궁 건물 자리, 우물, 도로, 중국에서 온 귀한 그릇까지 나왔어요. “여기가 정말 백제의 궁궐이었구나!” 하고 학자들이 깜짝 놀랐답니다.</div>
+                <div class="yt-embed" data-yt="Zi1fQuIyFpg" data-title="KBS 백제의 풍납토성"></div>
+                <p class="video-caption">📺 KBS 역사스페셜 - 잃어버린 왕국, 백제의 풍납토성 (▶ 누르면 재생)</p>
+            </div>
+
+            <div class="card">
+                <h2>⛵ 바다 너머 친구들, 칠지도</h2>
+                <p>백제 사람들은 튼튼한 배를 타고 중국과 일본까지 오가며 도자기·철기·비단을 팔았어요. 그래서 백제는 “문화를 나눠 주는 나라”로 유명했답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800" class="content-img" alt="칠지도">
+                <p class="img-caption">나뭇가지가 7개 달린 칼, <b>칠지도</b>. 일본 왕에게 선물한 우정의 증표예요.</p>
+                <p>이웃 나라 일본 왕에게는 “우리 평화롭게 지내자!”라며 <span class="modal-trigger" onclick="openModal('칠지도', '나뭇가지가 7개 달린 신기한 칼로, 백제 왕이 일본 왕에게 우정을 다지며 선물했어요. 칼에 금으로 글씨가 새겨져 있어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800')">칠지도</span>를 선물할 정도로 백제는 크고 강한 나라였어요.</p>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">A.D. 475 · 한성 함락</span>
+                <h2>🌙 캄캄한 밤의 탈출</h2>
+                <p>그런데 백제가 평화롭게 살던 어느 날, 북쪽의 힘센 나라 <span class="modal-trigger" onclick="openModal('고구려', '말을 타고 활을 잘 쏘는 용감한 군사들이 많았던 백제의 북쪽 나라예요. 광개토대왕과 장수왕 때 가장 넓고 강해졌어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Goguryeo%20tomb%20mural.jpg?width=800')">고구려</span>의 <span class="modal-trigger" onclick="openModal('장수왕', '고구려의 왕으로 97세까지 살며 나라를 크게 키웠어요. 475년 한성을 공격해 백제를 남쪽으로 밀어냈어요. 무덤은 중국 지안의 장군총으로 알려져 있어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomb%20of%20King%20Jangsu%201.jpg?width=800')">장수왕</span>이 철갑옷을 입은 군사 3만 명을 이끌고 쳐들어왔어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Goguryeo%20tomb%20mural.jpg?width=800" class="content-img" alt="고구려 고분 벽화">
+                <p class="img-caption">고구려 고분 벽화. 말 타고 활 쏘는 모습이 생생해요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Tomb%20of%20King%20Jangsu%201.jpg?width=800" class="content-img" alt="장수왕릉 장군총">
+                <p class="img-caption">장수왕의 무덤으로 전해지는 <b>장군총</b> (중국 지안). 돌로 쌓은 피라미드처럼 보여요.</p>
+                <p>"와아아!" 고구려 군대의 함성에 한성(서울)은 불길에 휩싸였어요. 백제 사람들은 캄캄한 밤을 틈타 짐을 싸서 남쪽으로 피난을 떠났죠. 며칠 밤낮을 걸어 산과 강이 병풍처럼 막아 주는 곳, <span class="modal-trigger" onclick="openModal('공주(웅진)', '산과 금강이 감싸고 있어 적을 막기 좋은 요새 도시예요. 475년부터 538년까지 백제의 두 번째 수도였어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Gongsanseong_Fortress_in_Gongju.jpg?width=800')">공주(웅진)</span>에 새 집을 마련했답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gongsanseong_Fortress_in_Gongju.jpg?width=800" class="content-img" alt="공주 공산성">
+                <p class="img-caption">피난처가 된 공주 <b>공산성</b>. 금강이 자연 해자(물로 된 도랑) 역할을 했어요.</p>
+                <div class="fact-box">📌 <strong>기억해 두기</strong><br>한성(서울) → 475년 고구려의 공격 → 웅진(공주)으로 급히 이사! 다음 막에서 영웅 왕이 등장해요.</div>
+            </div>
+        </div>
+
+        <!-- ===== 제2막 ===== -->
+        <div id="act2" class="act-section">
+            <div class="card">
+                <span class="year-chip">A.D. 475 ~ 538 · 웅진 백제</span>
+                <h2>👑 제2막: 영웅과 황금빛 도시</h2>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gongsanseong_Fortress_in_Gongju.jpg?width=800" class="content-img" alt="공주 공산성">
+                <p class="img-caption">금강이 감싼 요새 도시, 공주 공산성</p>
+                <p>산속 공주로 이사 온 백제 사람들은 고구려가 또 올까 봐 마음을 졸였어요. 그때 슈퍼히어로 같은 왕이 나타났어요. 바로 <span class="modal-trigger" onclick="openModal('무령왕', '백성을 사랑하고 농사를 장려해 약해진 백제를 다시 강한 나라(갱위강국)로 만든 임금님이에요. 일본에서 태어났다는 기록도 있어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomb_of_King_Muryeong.jpg?width=800')">무령왕</span>이에요!</p>
+                <p>무령왕은 굶주린 백성에게 농사짓는 법을 가르치고, 제방을 쌓아 홍수를 막았어요. 고구려가 쳐들어오자 직접 칼을 들고 적을 물리쳤죠. 521년에는 중국에 “백제가 다시 강국이 되었다(갱위강국)”고 자신 있게 알렸답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Tomb_of_King_Muryeong.jpg?width=800" class="content-img" alt="무령왕릉">
+                <p class="img-caption">도둑이 한 번도 들어가지 못한 기적의 무덤, <b>무령왕릉</b></p>
+            </div>
+
+            <div class="card">
+                <h2>💎 1,500년 만의 타임캡슐</h2>
+                <p>1971년 장마에 대비해 배수로를 파다가, 연꽃무늬 벽돌 틈으로 무덤 문이 열렸어요. 안에는 왕과 왕비의 이름·돌아가신 날이 적힌 돌판(<span class="modal-trigger" onclick="openModal('지석', '무덤 주인의 이름과 날짜를 적은 돌판이에요. 덕분에 이 무덤이 무령왕과 왕비의 것임을 딱 알 수 있었어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomb_of_King_Muryeong.jpg?width=800')">지석</span>)과 황금 관장식이 그대로 있었어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gold_Diadem_Ornaments_of_King_Muryeong.jpg?width=800" class="content-img" alt="무령왕 금제관식">
+                <p class="img-caption">불꽃처럼 화려한 무령왕의 <b>금제 관장식</b> (국보)</p>
+                <div class="fact-box">🔍 <strong>탐험 포인트</strong><br>무령왕의 관은 일본에서 나는 나무(금송)로 만들었어요. 벽돌 무덤 양식은 중국 양나라와 닮았죠. 백제가 바다 건너 친구들과 얼마나 친했는지 보여주는 증거예요.</div>
+                <div class="yt-embed" data-yt="atPoY7q93MU" data-title="무령왕릉 발굴 이야기"></div>
+                <p class="video-caption">📺 KBS - 1,400년 동안 감춰져 있던 무령왕릉이 열린 날 (▶ 누르면 재생)</p>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">A.D. 538 · 사비 천도</span>
+                <h2>🌾 더 넓은 들판, 부여(사비)로!</h2>
+                <p>무령왕의 아들 <span class="modal-trigger" onclick="openModal('성왕', '무령왕의 아들로, 538년 수도를 부여(사비)로 옮겨 백제의 가장 화려한 전성기를 열었어요. 나라 이름을 남부여라고 부르기도 했답니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Baekje_Cultural_Land.jpg?width=800')">성왕</span>은 생각했어요. “산골짜기는 지키기엔 좋지만, 넓은 나라를 만들려면 들판과 강이 필요해!”</p>
+                <p>그래서 두 번째 이사를 했어요. 바로 <span class="modal-trigger" onclick="openModal('부여(사비)', '백마강이 흐르고 넓은 들판이 있는 백제의 마지막 수도예요. 538년부터 660년까지 123년 동안 화려한 문화가 꽃피었어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Buyeo_Nakhwaam.jpg?width=800')">부여(사비)</span>예요. 금강(백마강)을 따라 배가 다니고, 넓은 땅에서 쌀도 많이 자랐답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Baekje_Cultural_Land.jpg?width=800" class="content-img" alt="백제문화단지 사비궁">
+                <p class="img-caption">사라진 사비궁을 재현한 <b>백제문화단지</b>의 모습</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/PaekjePagodaJeongnimsaji3.jpg?width=800" class="content-img" alt="정림사지 오층석탑">
+                <p class="img-caption">부여 한가운데 서 있는 <b>정림사지 5층 석탑</b>. 사비 도성의 중심이었어요.</p>
+                <div class="fact-box">📌 <strong>이사 정리</strong><br>① 한성(서울, 위례성) → ② 웅진(공주) → ③ 사비(부여). 백제는 수도를 세 번 옮긴 나라예요!</div>
+            </div>
+
+            <div class="card">
+                <h2>😊 백제의 미소, 예술의 꽃</h2>
+                <p>사비에 도착한 백제 사람들은 화려한 궁궐과 절을 짓고, 세상에서 가장 따뜻한 미소를 지닌 불상을 만들었어요. 사람들이 “백제의 미소”라고 부르는 이유죠.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gilt-bronze_Incense_Burner_of_Baekje.jpg?width=800" class="content-img" alt="백제금동대향로">
+                <p class="img-caption">국보 <b>백제금동대향로</b>. 봉황·용·음악가·동물 39마리가 숨어 있어요.</p>
+                <p>1993년 겨울, 부여에서 주차장을 만들려다 진흙 속에서 향로가 기적처럼 나왔어요. 산소가 안 통하는 진흙이 1,500년 동안 이불처럼 덮어 준 덕분이에요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Five-story_Wooden_Pagoda_in_Baekje_Cultural_Land.jpg?width=800" class="content-img" alt="능사 5층 목탑">
+                <p class="img-caption">아파트 13층 높이(38m)의 <b>능사 5층 목탑</b> 재현</p>
+                <div class="yt-embed" data-yt="F2DhyYubUVw" data-title="백제금동대향로"></div>
+                <p class="video-caption">📺 백제금동대향로를 가까이에서 살펴보는 영상 (▶ 누르면 재생)</p>
+            </div>
+        </div>
+
+        <!-- ===== 제3막 ===== -->
+        <div id="act3" class="act-section">
+            <div class="card">
+                <span class="year-chip">A.D. 660 · 백제의 마지막 해</span>
+                <h2>⚔️ 제3막: 계백 장군과 결사대</h2>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Busosanseong%20016.jpg?width=800" class="content-img" alt="부여 부소산성">
+                <p class="img-caption">사비를 지키던 마지막 산성, <b>부소산성</b></p>
+                <p>부여에서 100년 넘게 꽃피운 백제. 하지만 마지막 왕 <span class="modal-trigger" onclick="openModal('의자왕', '백제의 마지막 왕이에요. 처음엔 나라를 잘 다스렸으나, 660년 나당 연합군의 침략으로 사비가 함락되며 나라가 무너졌어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Throne_in_Sabi_Palace.jpg?width=800')">의자왕</span> 때 큰 위기가 찾아왔어요.</p>
+                <p>동남쪽의 <span class="modal-trigger" onclick="openModal('신라', '한반도 동남쪽에 있던 나라예요. 김춘추(태종무열왕)가 당나라와 손을 잡고 백제를 공격했어요. 경주가 수도였답니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Cheomseongdae.jpg?width=800')">신라</span>가 거대한 중국의 <span class="modal-trigger" onclick="openModal('당나라', '7세기 중국의 큰 제국이에요. 13만 명이 넘는 군사를 배에 태워 서해로 건너와 백제를 공격했어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Giant_Wild_Goose_Pagoda.jpg?width=800')">당나라</span>와 손을 잡고, 신라군 5만 + 당군 13만, 모두 18만 대군이 밀려온 거예요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Three_Kingdoms_of_Korea_Map.png?width=800" class="content-img" alt="삼국 지도">
+                <p class="img-caption">신라(오른쪽)와 당나라(바다 건너)가 양쪽에서 백제를 공격했어요.</p>
+                <div class="fact-box">🔍 <strong>왜 싸웠을까?</strong><br>의자왕 때 백제는 신라의 성을 여러 개 빼앗았어요. 신라는 위기를 넘기려고 당나라와 동맹을 맺었고, 당나라는 고구려를 치기 전에 백제를 먼저 무너뜨리려 했답니다.</div>
+            </div>
+
+            <div class="card">
+                <h2>🏇 5천 결사대, 황산벌로 가다</h2>
+                <p>나라가 위기에 처하자 백제의 영웅 <span class="modal-trigger" onclick="openModal('계백 장군', '5천 명의 결사대를 이끌고 황산벌에서 신라 5만 군대와 맞선 백제의 충신 장군이에요. 네 번이나 이기고도 결국 수적 열세를 넘지 못했어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Busosanseong%20016.jpg?width=800')">계백 장군</span>이 나섰어요. 군사 5,000명만 이끌고 <span class="modal-trigger" onclick="openModal('황산벌', '지금 충남 논산 근처의 넓은 들판이에요. 660년 계백의 결사대와 김유신의 신라군이 최후의 결전을 벌인 곳입니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/PaekjePagodaJeongnimsaji3.jpg?width=800')">황산벌</span>(논산)로 향했죠. 목숨을 걸고 싸우겠다는 군대를 <span class="modal-trigger" onclick="openModal('결사대', '죽을 각오로 나라를 지키러 모인 5천 명의 백제 군인들이에요. 계백 장군이 이끌었습니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Gongsanseong_Fortress_in_Gongju.jpg?width=800')">결사대</span>라고 불러요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/PaekjePagodaJeongnimsaji3.jpg?width=800" class="content-img" alt="정림사지 오층석탑">
+                <p class="img-caption">사비 한복판의 정림사지 탑. 전쟁 후 당나라 장군이 탑에 글을 새기기도 했어요.</p>
+                <p>"우리는 백제를 위해 한 발짝도 물러서지 않는다!" 계백과 결사대는 신라군 5만을 상대로 <b>네 번이나 크게 이겼어요</b>. 신라의 어린 화랑 관창이 두 번이나 뛰어들었다가 목숨을 잃은 뒤, 신라군은 이를 악물고 총공격을 퍼부었죠.</p>
+                <div class="yt-embed" data-yt="IFUWB7b1JdI" data-title="깨비키즈 황산벌 전투"></div>
+                <p class="video-caption">📺 깨비키즈 역사대모험 11화 - 황산벌 전투 (▶ 누르면 재생)</p>
+            </div>
+
+            <div class="card">
+                <h2>🌸 마지막 이야기, 그리고 기억</h2>
+                <p>적군은 너무 많았어요. 결국 결사대는 황산벌에서 모두 쓰러지고, 사비성도 함락되었답니다. 의자왕은 웅진성으로 피했다가 나당 연합군에 항복했어요. 660년, 700년 가까이 이어진 백제가 막을 내렸죠.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Nakwaam%20rock%201.jpg?width=800" class="content-img" alt="낙화암">
+                <p class="img-caption">부여 백마강 절벽 <b>낙화암</b>. 궁녀들이 꽃처럼 떨어졌다는 전설이 내려와요.</p>
+                <p>부소산성 아래 백마강 절벽에는 이런 전설이 있어요. 나라가 무너지자 궁궐의 여인들이 적에게 잡히지 않으려고 절벽에서 강으로 뛰어들었다는 이야기. 그래서 이름을 <span class="modal-trigger" onclick="openModal('낙화암', '꽃이 떨어지듯 궁녀들이 백마강으로 뛰어내렸다는 전설의 바위예요. 역사적 사실인지는 확실하지 않지만, 백제의 마지막을 기억하는 장소입니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Nakwaam%20rock%201.jpg?width=800')">낙화암</span>(떨어지는 꽃 바위)이라고 부른답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Buyeo_Nakhwaam.jpg?width=800" class="content-img" alt="낙화암과 백마강">
+                <p class="img-caption">백마강이 굽이치는 낙화암 풍경</p>
+                <div class="fact-box">💛 <strong>탐험대원이 기억할 것</strong><br>비록 전쟁에서는 졌지만, 나라를 지키려 한 계백과 결사대의 마음은 1,500년이 지난 오늘도 우리 가슴에 남아 있어요. 부여와 공주에서 그 흔적을 직접 찾아보세요!</div>
+            </div>
+        </div>
+
+        <!-- ===== 제4막: 백제의 왕 ===== -->
+        <div id="act4" class="act-section">
+            <div class="card">
+                <span class="year-chip">B.C. 18 ~ A.D. 660 · 31명의 왕</span>
+                <h2>👑 제4막: 백제의 왕</h2>
+                <p>백제를 다스린 임금님을 백성들은 <span class="modal-trigger" onclick="openModal('어라하·건길지', '백제어로 왕을 부르던 말이에요. 높은 사람들은 어라하, 백성들은 건길지라고 불렀다고 해요. 한자로는 왕이라고 적었답니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Three_Kingdoms_of_Korea_Map.png?width=800')">어라하</span> 또는 건길지라고 불렀어요. 초대 온조왕부터 마지막 의자왕까지, 모두 31명의 왕이 약 700년 동안 나라를 이끌었답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Three_Kingdoms_of_Korea_Map.png?width=800" class="content-img" alt="삼국시대 지도">
+                <p class="img-caption">왕이 바뀔 때마다 백제의 수도도 한성 → 웅진 → 사비로 옮겨 갔어요.</p>
+                <div class="king-chip-row">
+                    <span class="king-chip">1대 온조왕</span>
+                    <span class="king-chip">13대 근초고왕</span>
+                    <span class="king-chip">25대 무령왕</span>
+                    <span class="king-chip">26대 성왕</span>
+                    <span class="king-chip">30대 무왕</span>
+                    <span class="king-chip">31대 의자왕</span>
+                </div>
+                <div class="fact-box">📌 <strong>탐험 순서</strong><br>아래에 있는 왕들은 부여·공주 탐방에서 꼭 만나게 되는 영웅들이에요. 이름과 업적을 미리 외워 두면 미션이 훨씬 쉬워진답니다!</div>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">1대 · B.C. 18 ~ A.D. 28 · 한성</span>
+                <h2>🌱 온조왕 — 나라를 세운 왕</h2>
+                <p><span class="modal-trigger" onclick="openModal('온조왕', '백제를 세운 첫 번째 왕이에요. 고구려 주몽의 아들로, 형 비류와 함께 남쪽으로 내려와 한강 근처에 위례성을 쌓았다고 전해져요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Pungnap-dong%20Toseong-1.JPG?width=800')">온조왕</span>은 백제의 초대 왕이에요. 고구려에서 남쪽으로 내려온 온조는 한강이 보이는 땅에 성을 쌓고 “백성 백(百) 명과 함께 건넌 나라이니 백제(百濟)!”라고 이름 지었다고 해요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Pungnap-dong%20Toseong-1.JPG?width=800" class="content-img" alt="풍납토성">
+                <p class="img-caption">온조왕이 처음 도읍한 위례성으로 여겨지는 <b>풍납토성</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Seoul%20Mongchon%20Toseong-1.JPG?width=800" class="content-img" alt="몽촌토성">
+                <p class="img-caption">한성 백제의 또 다른 성, <b>몽촌토성</b> (올림픽공원)</p>
+                <div class="yt-embed" data-yt="Zi1fQuIyFpg" data-title="KBS 백제의 풍납토성"></div>
+                <p class="video-caption">📺 온조왕이 세운 첫 수도, 풍납토성 이야기 (▶ 누르면 재생)</p>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">13대 · 346 ~ 375 · 한성 전성기</span>
+                <h2>⚔️ 근초고왕 — 가장 넓은 백제</h2>
+                <p><span class="modal-trigger" onclick="openModal('근초고왕', '백제를 가장 크고 강하게 만든 왕이에요. 마한을 아우르고 고구려 평양성까지 공격했으며, 일본에 칠지도를 선물해 우정을 다졌어요. 무덤은 서울 석촌동 고분으로 추정됩니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800')">근초고왕</span> 때 백제는 ‘황금의 나라’가 되었어요. 남쪽으로는 마한을 아우르고, 북쪽으로는 고구려의 평양성까지 쳐들어갔답니다. 바다 건너 일본에는 일곱 가지 칼 <span class="modal-trigger" onclick="openModal('칠지도', '나뭇가지가 7개 달린 칼이에요. 근초고왕 때 백제 왕이 일본 왕에게 선물했다고 전해져요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800')">칠지도</span>를 선물했죠.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800" class="content-img" alt="칠지도">
+                <p class="img-caption">근초고왕 시대의 외교 선물로 전해지는 <b>칠지도</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Baekje%20Stone%20Chamber%20Tombs%20in%20Bangi-dong%201.jpg?width=800" class="content-img" alt="한성 백제 고분">
+                <p class="img-caption">서울 송파의 백제 고분. 근초고왕 무덤은 석촌동 3호분으로 추정돼요.</p>
+                <div class="fact-box">🔍 <strong>탐험 포인트</strong><br>근초고왕 이름은 ‘가까운 초고왕’이라는 뜻이에요. 앞선 초고왕을 이어 나라를 다시 크게 만든 왕이라 그렇게 불렀답니다.</div>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">25대 · 501 ~ 523 · 웅진 중흥</span>
+                <h2>🌟 무령왕 — 다시 강한 나라</h2>
+                <p>한성이 무너진 뒤, <span class="modal-trigger" onclick="openModal('무령왕', '이름 사마. 농사를 장려하고 고구려를 물리쳐 백제를 다시 강하게 만든 왕이에요. 중국에 “갱위강국(다시 강한 나라)”이라고 알렸고, 무덤은 공주 무령왕릉입니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomb_of_King_Muryeong.jpg?width=800')">무령왕</span>이 백제를 구해 냈어요. 제방을 쌓아 홍수를 막고, 굶주린 백성에게 농사를 가르쳤죠. 521년에는 중국에 “백제가 다시 강국이 되었다”고 자신 있게 알렸답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Tomb_of_King_Muryeong.jpg?width=800" class="content-img" alt="무령왕릉">
+                <p class="img-caption">도굴되지 않은 기적의 무덤, 공주 <b>무령왕릉</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gold_Diadem_Ornaments_of_King_Muryeong.jpg?width=800" class="content-img" alt="무령왕 금제관식">
+                <p class="img-caption">불꽃 모양의 <b>금제 관장식</b>. 왕의 모자 위에 달던 황금 장식이에요.</p>
+                <div class="yt-embed" data-yt="atPoY7q93MU" data-title="무령왕릉 발굴 이야기"></div>
+                <p class="video-caption">📺 무령왕릉이 1,400년 만에 열린 날 (▶ 누르면 재생)</p>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">26대 · 523 ~ 554 · 사비 천도</span>
+                <h2>🏛️ 성왕 — 부여로 이사한 왕</h2>
+                <p>무령왕의 아들 <span class="modal-trigger" onclick="openModal('성왕', '이름 명농. 538년 수도를 공주(웅진)에서 부여(사비)로 옮기고 나라 이름을 남부여라고 했어요. 백제의 가장 화려한 문화를 열었지만, 554년 관산성 전투에서 전사했습니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Baekje_Cultural_Land.jpg?width=800')">성왕</span>은 산골 공주가 좁다고 생각했어요. “더 넓은 들판과 강이 있는 곳으로 가자!” 538년, 수도를 <b>사비(부여)</b>로 옮기고 나라 이름을 남부여라고 불렀답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Baekje_Cultural_Land.jpg?width=800" class="content-img" alt="사비궁 재현">
+                <p class="img-caption">성왕이 꿈꾼 사비 궁궐을 재현한 <b>백제문화단지</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/PaekjePagodaJeongnimsaji3.jpg?width=800" class="content-img" alt="정림사지 오층석탑">
+                <p class="img-caption">사비 도성 한가운데의 <b>정림사지 5층 석탑</b></p>
+                <div class="yt-embed" data-yt="F2DhyYubUVw" data-title="백제금동대향로"></div>
+                <p class="video-caption">📺 사비 시대 최고의 보물, 백제금동대향로 (▶ 누르면 재생)</p>
+                <div class="fact-box">📌 <strong>슬픈 끝</strong><br>성왕은 옛 땅 한강을 되찾으려다 관산성(옥천) 전투에서 목숨을 잃었어요. 그래도 그가 옮긴 부여는 100년 넘게 백제의 꽃으로 피었답니다.</div>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">30대 · 600 ~ 641 · 사비·익산</span>
+                <h2>🎵 무왕 — 서동과 미륵사</h2>
+                <p><span class="modal-trigger" onclick="openModal('무왕', '이름 장, 아명 서동. 익산에 거대한 미륵사를 세운 왕이에요. 어린 시절 마를 캐서 팔았다는 서동 설화와, 신라 선화공주 이야기가 전해져요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Reconstructed%20miniature%20model%20of%20Mireuksa.jpg?width=800')">무왕</span>의 어린 이름은 서동(마 캐는 아이)이에요. 전설에 따르면 신라 공주가 예쁘다는 소문을 듣고, 아이들에게 노래를 퍼뜨려 마음을 전했다고 해요. 그 노래가 바로 <span class="modal-trigger" onclick="openModal('서동요', '선화공주님은 남 몰래 서동을 좋아한다… 로 시작하는 오래된 노래예요. 무왕과 선화공주의 사랑 이야기로 전해지지만, 설화일 수도 있어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Reconstructed%20miniature%20model%20of%20Mireuksa.jpg?width=800')">서동요</span>랍니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Reconstructed%20miniature%20model%20of%20Mireuksa.jpg?width=800" class="content-img" alt="미륵사 모형">
+                <p class="img-caption">백제 최대 사찰 <b>미륵사</b>의 모형. 탑이 세 개나 있었어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Iksan%20City%2069%20%2817204927146%29.jpg?width=800" class="content-img" alt="익산 미륵사지">
+                <p class="img-caption">익산 <b>미륵사지</b>. 우리나라에서 가장 오래되고 큰 석탑이 있는 곳이에요.</p>
+                <div class="yt-embed" data-yt="Y8pMRj9zxYY" data-title="백제역사유적지구 세계유산"></div>
+                <p class="video-caption">📺 미륵사지가 들어 있는 백제 세계유산 이야기 (▶ 누르면 재생)</p>
+                <div class="fact-box">🔍 <strong>진짜 기록</strong><br>2009년 미륵사지 석탑 안에서 금으로 된 글이 나왔어요. 639년, 무왕의 왕후가 탑을 세웠다는 내용이랍니다. 전설과 진짜 역사를 비교해 보는 재미가 있어요.</div>
+            </div>
+
+            <div class="card">
+                <span class="year-chip">31대 · 641 ~ 660 · 마지막 왕</span>
+                <h2>🕯️ 의자왕 — 백제의 마지막 왕</h2>
+                <p>무왕의 아들 <span class="modal-trigger" onclick="openModal('의자왕', '백제의 마지막 왕이에요. 즉위 초에는 신라의 성을 여러 개 빼앗을 만큼 강했지만, 660년 나당 연합군에 사비가 함락되며 나라가 무너졌어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Throne_in_Sabi_Palace.jpg?width=800')">의자왕</span>은 처음엔 씩씩한 왕이었어요. 신라의 성을 40개나 빼앗고 대야성까지 함락시켰죠. 하지만 신라가 당나라와 손을 잡자, 18만 대군이 밀려왔어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Throne_in_Sabi_Palace.jpg?width=800" class="content-img" alt="사비궁 어좌">
+                <p class="img-caption">왕이 앉던 자리, 사비궁의 <b>어좌</b> (백제문화단지)</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Nakwaam%20rock%201.jpg?width=800" class="content-img" alt="낙화암">
+                <p class="img-caption">사비가 함락되던 날의 전설이 깃든 <b>낙화암</b></p>
+                <div class="yt-embed" data-yt="IFUWB7b1JdI" data-title="깨비키즈 황산벌 전투"></div>
+                <p class="video-caption">📺 의자왕 때 벌어진 황산벌 전투 (▶ 누르면 재생)</p>
+                <div class="fact-box">💛 <strong>왕 이름 암기 팁</strong><br>온조(시작) → 근초고(가장 넓음) → 무령(다시 강함) → 성왕(부여로 이사) → 무왕(미륵사·서동요) → 의자(마지막). 이 여섯 이름만 기억해도 탐험대원 합격이에요!</div>
+            </div>
+        </div>
+
+        <!-- ===== 제5막: 백제와 다른 나라 ===== -->
+        <div id="act5" class="act-section">
+            <div class="card">
+                <span class="year-chip">친구 · 라이벌 · 이웃</span>
+                <h2>🌍 제5막: 백제와 다른 나라</h2>
+                <p>백제는 혼자서 살지 않았어요. 북쪽에는 힘이 센 <b>고구려</b>, 동쪽에는 <b>신라</b>, 남동쪽에는 <b>가야</b>, 바다 건너에는 <b>왜국(일본)</b>이 있었답니다. 어떤 나라는 친척 같고, 어떤 나라는 라이벌, 어떤 나라는 가장 친한 친구였어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Three%20Kingdoms%20and%20Gaya%20%285th%20Century%29%20%284261802730%29.jpg?width=800" class="content-img" alt="삼국과 가야 지도">
+                <p class="img-caption">5세기 무렵 지도. 고구려·백제·신라와 아래쪽의 가야가 보여요.</p>
+                <div class="king-chip-row">
+                    <span class="king-chip">⚔️ 고구려</span>
+                    <span class="king-chip">🤝 신라</span>
+                    <span class="king-chip">🏺 가야</span>
+                    <span class="king-chip">🌾 마한</span>
+                    <span class="king-chip">⛵ 왜국</span>
+                </div>
+                <div class="fact-box">📌 <strong>탐험 포인트</strong><br>나라를 이해할 때는 “누가 이겼나”만 보지 말고, “왜 손을 잡았나 / 왜 싸웠나”를 함께 생각해 보세요!</div>
+            </div>
+
+            <div class="card">
+                <h2>⚔️ 고구려 — 같은 뿌리, 큰 라이벌</h2>
+                <p>백제를 세운 온조왕의 아버지는 고구려의 <span class="modal-trigger" onclick="openModal('주몽', '고구려를 세운 왕이에요. 온조왕의 아버지로 전해져, 백제와 고구려는 같은 뿌리에서 시작된 나라라고 해요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Goguryeo%20tomb%20mural.jpg?width=800')">주몽</span>이에요. 그래서 두 나라는 처음부터 깊은 사이였답니다. 그런데 한강을 두고 자주 싸웠어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Goguryeo%20tomb%20mural.jpg?width=800" class="content-img" alt="고구려 고분 벽화">
+                <p class="img-caption">고구려 고분 벽화. 말 타고 활 쏘는 모습이 힘세 보이지요.</p>
+                <p>백제가 가장 강했던 근초고왕 때는 고구려와의 싸움에서 이겼고, 반대로 고구려가 가장 강했던 <span class="modal-trigger" onclick="openModal('장수왕', '고구려를 아주 크게 만든 왕이에요. 475년 백제의 한성을 빼앗아, 백제를 남쪽 공주로 밀어냈어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomb%20of%20King%20Jangsu%201.jpg?width=800')">장수왕</span> 때는 백제가 한성을 잃고 남쪽으로 내려가야 했어요. 같은 뿌리인데도 한강을 두고 자주 다툰 ‘라이벌 친척’이었죠.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Tomb%20of%20King%20Jangsu%201.jpg?width=800" class="content-img" alt="장수왕릉 장군총">
+                <p class="img-caption">장수왕의 무덤으로 전해지는 <b>장군총</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Goguryeo-Gakjeochong-Ssireumdo-01.jpg?width=800" class="content-img" alt="고구려 씨름 벽화">
+                <p class="img-caption">각저총 벽화의 <b>씨름 그림</b>. 고구려 사람들도 씨름을 했대요!</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Haotai%20wang%20stele%20outside%202011%2007%2024.jpg?width=800" class="content-img" alt="광개토대왕릉비">
+                <p class="img-caption">광개토대왕의 업적을 새긴 커다란 돌, <b>광개토대왕릉비</b></p>
+                <p>나중에 신라가 커지자, 고구려와 백제는 “신라를 막자!”는 같은 목표가 생겨 다시 손을 잡았어요. 이 우정은 백제가 멸망할 때까지 이어졌답니다.</p>
+                <div class="yt-embed" data-yt="fjCVkTahTi8" data-title="고구려 안악 3호분 벽화"></div>
+                <p class="video-caption">📺 고구려 고분 벽화 속으로 — 안악 3호분 이야기 (▶ 누르면 재생)</p>
+            </div>
+
+            <div class="card">
+                <h2>🤝 신라 — 친구였다, 원수가 되었다</h2>
+                <p>신라와 백제는 때로는 가장 가까운 친구, 때로는 가장 무서운 적이었어요. 고구려가 남쪽으로 내려올 때 두 나라는 <span class="modal-trigger" onclick="openModal('나제동맹', '신라(나)와 백제(제)가 고구려를 막으려고 손을 잡은 약속이에요. 함께 한강 근처까지 올라갔어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Cheomseongdae.jpg?width=800')">나제동맹</span>을 맺고 함께 고구려에 맞섰어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Cheomseongdae.jpg?width=800" class="content-img" alt="경주 첨성대">
+                <p class="img-caption">신라의 수도 경주에 있는 <b>첨성대</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gold%20Crown%20of%20Silla%20Kingdom%2001a.jpg?width=800" class="content-img" alt="신라 금관">
+                <p class="img-caption">신라 왕이 쓰던 <b>금관</b>. 반짝이는 나무가 하늘로 솟아 있지요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Tumuli%20Park%2C%20Gyeongju%2C%20South%20Korea%20%283166582986%29.jpg?width=800" class="content-img" alt="경주 대릉원">
+                <p class="img-caption">경주 <b>대릉원</b>. 잔디 언덕처럼 보이는 것들이 신라 왕과 귀족의 무덤이에요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Dabotap_Pagoda_01.jpg?width=800" class="content-img" alt="불국사 다보탑">
+                <p class="img-caption">불국사의 멋진 돌탑, <b>다보탑</b></p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Seokguram%20Buddha.JPG?width=800" class="content-img" alt="석굴암 본존불">
+                <p class="img-caption">석굴암 안의 <b>본존불</b>. 신라 사람들이 돌로 만든 부처님이에요.</p>
+                <p>함께 한강까지 올라갔지만, 백제는 한강을 오래 지키지 못했어요. 백제 군대가 내려오자 신라가 그 땅을 차지했죠. 사이가 나빠지더니, 554년 <span class="modal-trigger" onclick="openModal('관산성 전투', '지금의 충북 옥천 근처에서 벌어진 싸움이에요. 성왕이 신라와 싸우다 목숨을 잃었고, 이후 백제와 신라는 원수가 되었어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Gongsanseong_Fortress_in_Gongju.jpg?width=800')">관산성 전투</span>에서 성왕이 목숨을 잃자 두 나라는 돌이킬 수 없는 원수가 되었답니다. 이 대립은 백제가 멸망할 때까지 이어졌어요.</p>
+                <div class="yt-embed" data-yt="AGY1Ws6gJiY" data-title="경주역사유적지구"></div>
+                <p class="video-caption">📺 박물관이 된 도시, 신라의 수도 경주 (약 200초 · ▶ 누르면 재생)</p>
+                <div class="yt-embed" data-yt="MhAvb9fuEVY" data-title="석굴암과 불국사"></div>
+                <p class="video-caption">📺 석굴암과 불국사 — 신라의 아름다운 절 (약 200초 · ▶ 누르면 재생)</p>
+                <div class="fact-box">🔍 <strong>한 줄 정리</strong><br>고구려가 강할 때 → 신라와 친구! / 한강을 두고 다툰 뒤 → 원수! / 성왕이 전사한 뒤 → 끝까지 싸움.</div>
+            </div>
+
+            <div class="card">
+                <h2>🏺 가야 — 옆집의 작은 친구들</h2>
+                <p><span class="modal-trigger" onclick="openModal('가야', '낙동강 근처에 있던 여러 작은 나라들의 모임이에요. 철을 잘 다루고 예쁜 토기를 만들었어요. 백제·왜와 배 타고 물건을 주고받았답니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Duck-shaped%20pottery%20%EC%98%A4%EB%A6%AC%ED%98%95%20%ED%86%A0%EA%B8%B0.jpg?width=800')">가야</span>는 백제의 남동쪽에 있던 여러 작은 나라예요. 국경이 맞닿아 있어서 오래오래 오가며 물건을 나누었죠. 철과 토기를 잘 만들었고, 왜국과도 함께 교류했답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Duck-shaped%20pottery%20%EC%98%A4%EB%A6%AC%ED%98%95%20%ED%86%A0%EA%B8%B0.jpg?width=800" class="content-img" alt="가야 오리 토기">
+                <p class="img-caption">가야 사람들이 만든 오리 모양 토기. 귀엽지 않나요?</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Map%20of%20Gaya%20confederacy%20in%20Korea%20.png?width=800" class="content-img" alt="가야 연맹 지도">
+                <p class="img-caption">낙동강 근처의 <b>가야 연맹</b> 지도. 김해·고령·함안처럼 여러 나라가 모여 있어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/2014-04-06%20Goryeong%20Jisan-dong%20Tombs.jpg?width=800" class="content-img" alt="고령 지산동 고분군">
+                <p class="img-caption">고령 <b>지산동 고분군</b>. 대가야 사람들의 언덕 무덤이에요. 지금은 세계유산이랍니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Gaya%20Confederacy%20Iron%20Stirrups%20%2817378457343%29.jpg?width=800" class="content-img" alt="가야 철 등자">
+                <p class="img-caption">가야 사람들이 만든 <b>철 등자</b>(발걸이). 철을 아주 잘 다루었어요.</p>
+                <p>세 나라(백제·가야·왜)는 때때로 고구려와 신라에 함께 맞서기도 했어요. 다만 백제의 나라가 더 컸기 때문에, 큰형처럼 더 많은 영향을 주었답니다.</p>
+                <div class="yt-embed" data-yt="9YJoN1NLBBo" data-title="가야고분군 세계유산 등재"></div>
+                <p class="video-caption">📺 가야의 무덤들이 세계유산이 된 이야기 (▶ 누르면 재생)</p>
+                <div class="fact-box">📌 <strong>기억하기</strong><br>가야는 ‘하나의 큰 나라’가 아니라, 김해·고령·함안처럼 여러 친구가 모여 있는 연맹이었어요.</div>
+            </div>
+
+            <div class="card">
+                <h2>🌾 마한 — 백제의 처음 고향</h2>
+                <p>백제는 처음부터 거대한 제국이 아니었어요. 처음엔 한강 남쪽 <span class="modal-trigger" onclick="openModal('마한', '삼한(마한·진한·변한) 중 하나로, 충청·전라도 일대에 있던 작은 나라들의 모임이에요. 백제도 처음엔 마한의 한 나라였답니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Egg%20Shaped%20Pottery.Proto-three%20Kingdoms%20Period.%20Seoul%20National%20University%20Museum.jpg?width=800')">마한</span> 연맹의 한 나라였답니다. 흙으로 만든 그릇을 보면, 백제 사람들은 멀리 부여·고구려보다 옆집 마한 친구들과 더 닮아 있었어요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Egg%20Shaped%20Pottery.Proto-three%20Kingdoms%20Period.%20Seoul%20National%20University%20Museum.jpg?width=800" class="content-img" alt="삼한 시기 토기">
+                <p class="img-caption">삼한 시기 사람들이 쓰던 알 모양 토기</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Korea-Proto.3.Kingdoms.Bird-shaped%20pottery.jpg?width=800" class="content-img" alt="삼한 새 모양 토기">
+                <p class="img-caption">삼한 사람들이 만든 <b>새 모양 토기</b>. 가야 오리 토기와 닮았지요?</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Rock%20carved%20Buddha%20triad%20in%20Seosan%2C%20South%20Korea.jpg?width=800" class="content-img" alt="서산 마애삼존불">
+                <p class="img-caption">충남 서산의 <b>마애삼존불</b>. 옛 마한 땅에 피어난 ‘백제의 미소’예요.</p>
+                <p>근초고왕 때 마한 전체에 백제의 이름이 퍼졌고, 무령왕 때에야 남쪽 땅을 더 튼튼히 다스리게 되었어요. 하지만 경기도·충북 일부는 고구려와 신라에게 내주어야 해서, “마한 전체를 우리 땅으로!”라는 꿈은 끝까지 다 이루지 못했답니다.</p>
+                <div class="yt-embed" data-yt="atPoY7q93MU" data-title="무령왕릉 발굴 이야기"></div>
+                <p class="video-caption">📺 마한의 땅을 튼튼히 다스린 무령왕의 무덤 이야기 (▶ 누르면 재생)</p>
+                <div class="fact-box">🔍 <strong>탐험 포인트</strong><br>백제가 마한을 ‘그냥 정복’했다고만 생각하면 안 돼요. 같은 남쪽 가족에서 시작해, 천천히 큰형이 된 나라에 가깝답니다.</div>
+            </div>
+
+            <div class="card">
+                <h2>⛵ 왜국 — 바다 건너 가장 가까운 친구</h2>
+                <p>백제와 <span class="modal-trigger" onclick="openModal('왜국', '지금의 일본에 있던 나라예요. 야마토라고도 불러요. 백제에게 글자·불교·건축·옷 만드는 법을 배웠고, 백제가 위기에 처하면 군대를 보내 도우려고 했어요.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Horyu-ji10s3200.jpg?width=800')">왜국</span>(야마토, 지금의 일본)의 사이는 아주 특별했어요. 백제는 배 타고 가서 건축, 철 다루기, 옷 짜기, 약, 음악처럼 <b>생활에 필요한 기술</b>을 많이 알려 주었답니다.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800" class="content-img" alt="칠지도">
+                <p class="img-caption">백제 왕이 왜왕에게 선물한 <b>칠지도</b>. 우정의 증표예요.</p>
+                <p>글과 생각도 전해 주었어요. 근초고왕은 <span class="modal-trigger" onclick="openModal('왕인·아직기', '백제의 학자로, 왜국에 가서 한자와 논어·천자문을 가르쳤다고 해요. 일본에 글자가 퍼지는 데 큰 도움을 주었답니다.', 'https://commons.wikimedia.org/wiki/Special:FilePath/Chiljido.jpg?width=800')">왕인과 아직기</span>를 보내 한자와 《논어》《천자문》을 가르쳤고, 무령왕은 유교를 가르치는 박사를, 성왕은 불교를 전하는 사신을 보냈죠.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Horyu-ji10s3200.jpg?width=800" class="content-img" alt="일본 법륭사">
+                <p class="img-caption">일본 나라의 <b>법륭사</b>. 백제에서 건너간 건축·불교 문화의 영향을 받은 오래된 절이에요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Horyu-ji36s3200.jpg?width=800" class="content-img" alt="법륭사 꿈전">
+                <p class="img-caption">법륭사 <b>꿈전(유메도노)</b>. 팔각형으로 생긴 아름다운 건물이에요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Kudara%20Kannon.%20British%20Museum.jpg?width=800" class="content-img" alt="백제관음">
+                <p class="img-caption"><b>백제관음</b>의 모형. 일본 사람들이 ‘백제에서 온 부처님’이라고 부른 불상이에요.</p>
+                <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Asuka-dera%20Asuka%20Nara%20pref05n4272.jpg?width=800" class="content-img" alt="아스카데라">
+                <p class="img-caption">일본 최초의 절 가운데 하나인 <b>아스카데라</b>. 백제 기술자들이 짓는 일을 도왔어요.</p>
+                <p>일본 기록에는 왕과 신하들이 <b>백제옷</b>을 입고 구경꾼들이 기뻐했다는 이야기도 나와요. 백제가 위기에 처하자 왜는 큰 군대를 보내 도우려고 했고, 나라를 잃은 백제 사람들 중 많은 이가 일본에 새 삶을 시작했답니다.</p>
+                <div class="yt-embed" data-yt="Y8pMRj9zxYY" data-title="백제역사유적지구 세계유산"></div>
+                <p class="video-caption">📺 백제의 유적과 동아시아 교류 이야기 (▶ 누르면 재생)</p>
+                <div class="yt-embed" data-yt="WpUwbGFOxxI" data-title="진묘수 영상"></div>
+                <p class="video-caption">📺 무덤을 지키던 돌짐승, 진묘수 (▶ 누르면 재생)</p>
+                <div class="fact-box">💛 <strong>탐험대원이 기억할 것</strong><br>백제는 왜의 ‘주인’도, 왜의 ‘하인’도 아니었어요. <b>서로 도우며 배운 가까운 친구</b>였어요. 그래서 지금도 일본의 옛 절과 보물을 보면 백제의 솜씨가 떠오른답니다.</div>
+            </div>
+
+            <div class="card">
+                <h2>🌟 다섯 나라를 한 줄로!</h2>
+                <div class="fact-box">⚔️ <strong>고구려</strong> — 같은 뿌리, 한강을 두고 다툰 큰 라이벌<br><br>
+🤝 <strong>신라</strong> — 처음엔 친구, 한강·관산성 이후엔 원수<br><br>
+🏺 <strong>가야</strong> — 옆집의 작은 친구들, 철과 토기의 나라<br><br>
+🌾 <strong>마한</strong> — 백제가 태어난 남쪽 가족<br><br>
+⛵ <strong>왜국</strong> — 바다 건너, 글·불교·건축을 나눈 가장 가까운 친구</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🏺 탭 2: 부여 탐험 및 미션 -->
+    <div id="tab-buyeo" class="tab-content">
+        <div class="journal-card">
+            <h3 class="journal-title">📝 부여 탐험 일지 (사비 백제)</h3>
+            <div class="journal-row">
+                <label>📅 탐험 일시:</label>
+                <input type="date" id="buyeo-date">
+            </div>
+            <div class="journal-row">
+                <label>☀️ 오늘 날씨:</label>
+                <div class="weather-selector">
+                    <label><input type="radio" name="b_w"><span>☀️ 맑음</span></label>
+                    <label><input type="radio" name="b_w"><span>☁️ 구름</span></label>
+                    <label><input type="radio" name="b_w"><span>☂️ 비</span></label>
+                </div>
+            </div>
+            <div class="journal-row">
+                <label>😎 오늘의 각오:</label>
+                <input type="text" placeholder="예: 향로 속 동물 39마리를 다 찾을 거야!">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🏛️ 관람 포인트 1: 국립부여박물관</h2>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Buyeo_National_Museum.jpg/800px-Buyeo_National_Museum.jpg" class="content-img" alt="부여박물관">
+            <p>박물관에 들어가면 백제 사람들이 쓰던 신기하고 아름다운 물건들이 가득해요. 그중에서 꼭 봐야 할 3가지 보물을 소개할게요!</p>
+
+            <h3>① 진흙 속의 기적, 백제금동대향로</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Gilt-bronze_Incense_Burner_of_Baekje.jpg/600px-Gilt-bronze_Incense_Burner_of_Baekje.jpg" class="content-img" alt="금동대향로">
+            <p>1993년 겨울, 주차장을 만들려고 땅을 파다 새카만 진흙 속에서 발견됐어요. 산소가 아예 통하지 않는 진흙이 이불처럼 덮어준 덕분에 1,500년 동안 하나도 녹슬지 않고 기적처럼 완벽하게 나타났어요!</p>
+
+            <div class="yt-embed" data-yt="F2DhyYubUVw" data-title="백제금동대향로"></div>
+
+            <p>꼭대기에는 하늘을 나는 불사조 '봉황'이 여의주를 품고 있고, 맨 아래에는 바다를 다스리는 힘센 '용'이 입을 쫙 벌린 채 역동적으로 향로 전체를 떠받치고 있어요. 그 사이에는 악기를 연주하는 5명의 꼬마 음악가들과 호랑이, 코끼리 등 39마리의 동물들이 숨바꼭질하듯 콕콕 박혀있어요.</p>
+
+            <h3>② 연꽃이 피어난 벽돌 (전돌)</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Baekje_Patterned_Bricks.jpg/600px-Baekje_Patterned_Bricks.jpg" class="content-img" alt="무늬벽돌">
+            <p>바닥이나 벽을 장식할 때 쓰던 흙으로 구운 벽돌이에요. 산과 구름무늬, 연꽃무늬, 심지어 도깨비 무늬까지 아주 정교하게 도장처럼 찍혀있어 백제 사람들의 솜씨를 엿볼 수 있어요.</p>
+
+            <h3>③ 백제의 카카오톡, 나무편지 (목간)</h3>
+            <p>종이가 비쌌던 옛날, 길쭉한 나무판자를 깎아 붓으로 글씨를 쓴 '목간'이에요. "쌀 좀 보내줘", "나 아파서 못 가" 같은 1,500년 전의 생생한 일상 이야기가 적혀있답니다.</p>
+        </div>
+
+        <div class="card">
+            <h2>🏰 관람 포인트 2: 백제문화단지</h2>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Baekje_Cultural_Land_Panorama.jpg/1024px-Baekje_Cultural_Land_Panorama.jpg" class="content-img" alt="백제문화단지">
+            <p>불타 없어졌던 사비궁을 현대의 대목장 할아버지들이 14년 동안 땀 흘려 완벽하게 다시 만들었어요. 못을 하나도 쓰지 않고 나무를 퍼즐처럼 끼워 맞췄대요!</p>
+
+            <h3>① 가장 크고 화려한 궁궐, 사비궁</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Throne_in_Sabi_Palace.jpg/800px-Throne_in_Sabi_Palace.jpg" class="content-img" alt="어좌">
+            <p>가장 큰 건물인 천정전 한가운데는 왕이 앉아 회의를 하던 화려한 '어좌'가 있어요. 임금님이 된 것처럼 거들먹거려 볼 수 있죠!</p>
+
+            <h3>② 하늘을 찌르는 거대한 탑, 능사</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Five-story_Wooden_Pagoda_in_Baekje_Cultural_Land.jpg/600px-Five-story_Wooden_Pagoda_in_Baekje_Cultural_Land.jpg" class="content-img" alt="5층 목탑">
+            <p>무려 아파트 13층 높이(38m)로 거대한 나무를 깎아 차곡차곡 쌓아 올린 5층 목탑이 우뚝 서 있어요. 탑 아래서 소원도 빌어보세요.</p>
+
+            <h3>③ 백제의 첫 도읍 위례성과 생활문화마을</h3>
+            <p>짚으로 엮은 초가집(움집)들이 옹기종기 모여있는 원시 시대 느낌의 위례성과, 귀족들과 평민들의 멋진 기와집들이 있는 생활문화마을에서 상황극을 즐겨보세요.</p>
+        </div>
+
+        <div class="card" style="background:#FFFBCC;">
+            <h2 style="text-align:center;">🏆 부여 탐험대 10대 미션</h2>
+        </div>
+
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 1</span><p>향로 맨 위 봉황의 턱밑을 자세히 쳐다보세요! 소원을 들어주는 이 구슬은? (초성: ㅇㅇㅈ)</p><input type="text" id="bm1" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm1', '여의주')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 2</span><p>향로 뚜껑에서 악기를 연주하는 5명의 아저씨가 모두 나오게 살짝 돌려가며 사진 찍어주세요!</p><label class="camera-btn" for="cam2">📷 사진 업로드</label><input type="file" id="cam2" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev2')"><div class="preview-box" id="prev2">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 3</span><p>박물관 설명판을 읽어보고 향로에 조각된 동물은 모두 몇 마리인지 적어보세요.</p><input type="text" id="bm3" placeholder="숫자 입력"><button class="action-btn" onclick="checkQuiz('bm3', '39')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 4</span><p>향로를 받치고 있는 용의 뿔이나 날카로운 발톱을 내 맘대로 더 무섭게 그려보세요!</p><canvas class="drawing-canvas" id="canvas4"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas4')">지우기</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 5</span><p>박물관에서 향로 다음으로 내 마음에 쏙 드는 보물(그릇, 칼 등)을 찾아 사진 찍어 올려주세요!</p><label class="camera-btn" for="cam5">📷 사진 업로드</label><input type="file" id="cam5" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev5')"><div class="preview-box" id="prev5">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 6</span><p>[백제문화단지] 사비궁 천정전 안의 왕의 의자 '어좌' 앞에서 늠름한 자세로 인증샷 찰칵!</p><label class="camera-btn" for="cam6">📷 사진 업로드</label><input type="file" id="cam6" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev6')"><div class="preview-box" id="prev6">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 7</span><p>사비궁 지붕 꼭대기 양쪽 끝을 올려다보세요. 화재를 막아주는 장식 기와 이름은? (초성: ㅊㅁ)</p><input type="text" id="bm7" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm7', '치미')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 8</span><p>능사 5층 목탑 지붕 모서리에 매달려 바람에 딸랑딸랑 소리 나는 종의 이름은? (초성: ㅍㄱ)</p><input type="text" id="bm8" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('bm8', '풍경')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 9</span><p>활쏘기(국궁) 체험장이나 생활문화마을에서 내가 씩씩하게 체험하는 모습을 사진으로 남기기!</p><label class="camera-btn" for="cam9">📷 사진 업로드</label><input type="file" id="cam9" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev9')"><div class="preview-box" id="prev9">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 10</span><p>황산벌에서 싸우던 장군의 갑옷에 나만의 멋진 황금색, 빨간색을 칠해 꾸며보세요!</p><canvas class="drawing-canvas" id="canvas10"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas10')">지우기</button></div>
+    </div>
+
+    <!-- 🏰 탭 3: 공주 탐험 및 미션 -->
+    <div id="tab-gongju" class="tab-content">
+        <div class="journal-card" style="border-color: #00838F; background-color: #E0F7FA;">
+            <h3 class="journal-title" style="color: #006064;">📝 공주 탐험 일지 (웅진 백제)</h3>
+            <div class="journal-row"><label>📅 탐험 일시:</label><input type="date" id="gongju-date"></div>
+            <div class="journal-row">
+                <label>☀️ 오늘 날씨:</label>
+                <div class="weather-selector">
+                    <label><input type="radio" name="g_w"><span>☀️ 맑음</span></label>
+                    <label><input type="radio" name="g_w"><span>☁️ 구름</span></label>
+                    <label><input type="radio" name="g_w"><span>☂️ 비</span></label>
+                </div>
+            </div>
+            <div class="journal-row"><label>😎 오늘의 각오:</label><input type="text" placeholder="예: 진묘수 표정을 똑같이 따라 할 거야!"></div>
+        </div>
+
+        <div class="card">
+            <h2>🏛️ 관람 포인트 1: 무령왕릉</h2>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Tomb_of_King_Muryeong.jpg/800px-Tomb_of_King_Muryeong.jpg" class="content-img" alt="무령왕릉 전경">
+            <p>1,500년 동안 도둑이 단 한 명도 들어오지 못해 옛날 보물이 그대로 발견된 기적의 무덤이에요!</p>
+
+            <h3>① 1,500년 만에 깨어난 가디언, 진묘수</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Jinmyosu.jpg/800px-Jinmyosu.jpg" class="content-img" alt="진묘수">
+            <p>1971년 무덤 문을 열었을 때, 머리에 나뭇가지 같은 뿔이 달리고 입술엔 빨간 물감을 칠한 돌짐승이 무덤을 지키고 있었어요. 이 '진묘수' 덕분에 무덤 안의 보물들이 안전할 수 있었죠.</p>
+
+            <div class="yt-embed" data-yt="WpUwbGFOxxI" data-title="진묘수 영상"></div>
+            <p class="video-caption">📺 무령왕릉을 지키던 진묘수 (▶ 누르면 재생)</p>
+
+            <h3>② 연꽃무늬 벽돌과 불꽃 요정의 방</h3>
+            <p>무덤 안쪽 방은 연꽃무늬가 찍힌 네모난 벽돌을 수천 개나 정성스럽게 쌓아 둥근 아치 모양으로 만들었어요. 벽 중간중간 호롱불을 켜두는 불꽃 모양의 구멍도 있답니다.</p>
+
+            <h3>③ 왕과 왕비의 황금 관장식과 은팔찌</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Gold_Diadem_Ornaments_of_King_Muryeong.jpg/600px-Gold_Diadem_Ornaments_of_King_Muryeong.jpg" class="content-img" alt="무령왕 금제관식">
+            <p>불꽃처럼 화려한 왕의 금제 관장식과 연꽃병 모양의 왕비 관장식이 발견되었어요. 또한 "다리가 은을 많이 넣어 만들었다"라고 이름과 날짜가 적힌 신기한 은팔찌도 나왔답니다.</p>
+        </div>
+
+        <div class="card">
+            <h2>🏰 관람 포인트 2: 거대한 방패, 공산성</h2>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Gongsanseong_Aerial.jpg/1024px-Gongsanseong_Aerial.jpg" class="content-img" alt="공산성 전경">
+            <p>산봉우리 능선을 따라 무거운 돌을 짊어지고 구불구불 쌓은 성이에요. 바로 옆에 넓고 깊은 금강이 방어용 물길(해자) 역할을 톡톡히 했죠.</p>
+
+            <h3>① 4방위를 지키는 수호신 깃발</h3>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Gongsanseong_Geumseoru.jpg/800px-Gongsanseong_Geumseoru.jpg" class="content-img" alt="금서루">
+            <p>성곽길을 걷다 보면 동서남북마다 청룡, 백호, 주작, 현무의 전설 동물 깃발이 펄럭이고 있어요. 진짜 백제 군사가 되어 순찰을 도는 기분을 느껴보세요.</p>
+
+            <h3>② 강가에 찰랑이는 정자와 연못 (만하루 & 연지)</h3>
+            <p>금강 쪽에 가면 '만하루'라는 멋진 정자와 커다란 돌을 층층이 쌓아 만든 아주 깊은 연못인 '연지'가 있어요. 성이 포위되었을 때 식수로 썼던 똑똑한 시설이에요.</p>
+
+            <h3>③ 조선시대 얼음 창고 (석빙고)</h3>
+            <p>정자 근처 동굴 같은 돌창고는 조선시대에 한겨울 금강 얼음을 보관하여 여름에 꺼내 먹던 냉장고 역할을 했답니다.</p>
+        </div>
+
+        <div class="card" style="background:#E0F7FA;">
+            <h2 style="text-align:center; color:#006064;">🏆 공주 탐험대 10대 미션</h2>
+        </div>
+
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 1</span><p>모형관에서 재현해 놓은 무덤 벽! 연꽃무늬가 새겨진 흙을 구워 만든 이것은? (초성: ㅂㄷ)</p><input type="text" id="gm1" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm1', '벽돌')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 2</span><p>모형관 입구 무덤 수호신 '진묘수(석수)' 옆에서 똑같이 무서운 몬스터 표정 짓고 셀카 찍기!</p><label class="camera-btn" for="cam_g2">📷 사진 업로드</label><input type="file" id="cam_g2" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g2')"><div class="preview-box" id="prev_g2">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 3</span><p>왕비님이 베고 주무시던 '베개(두침)' 위에 그려진 새 두 마리를 나만의 색깔로 색칠해 주세요!</p><canvas class="drawing-canvas" id="canvas_g3"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas_g3')">지우기</button></div>
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 4</span><p>무령왕릉 칼 손잡이 끝에 조각된 번쩍이는 동물은 무엇일까요? 환두( ? )도</p><input type="text" id="gm4" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm4', '용')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 5</span><p>모형관 밖 진짜 왕릉들이 둥글게 솟아있는 송산리 고분군 언덕을 등 뒤로 씩씩하게 브이(V) 포즈!</p><label class="camera-btn" for="cam_g5">📷 사진 업로드</label><input type="file" id="cam_g5" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g5')"><div class="preview-box" id="prev_g5">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 6</span><p>서쪽 문인 '금서루' 천장에 알록달록 화려하게 그려져 있는 동물의 이름은 무엇일까요?</p><input type="text" id="gm6" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm6', '호랑이')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 7</span><p>성곽길 깃발 중 내가 가장 좋아하는 색깔의 깃발(청,백,적,흑)을 하나 골라 깃발 아래서 찰칵!</p><label class="camera-btn" for="cam_g7">📷 사진 업로드</label><input type="file" id="cam_g7" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g7')"><div class="preview-box" id="prev_g7">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge">🏅 관찰 미션 8</span><p>남쪽을 지키는 붉은색 깃발에 그려진 상상 속 아름다운 불새 이름은? (초성: ㅈㅈ)</p><input type="text" id="gm8" placeholder="정답 입력"><button class="action-btn" onclick="checkQuiz('gm8', '주작')">정답 확인</button></div>
+        <div class="mission-card"><span class="mission-badge photo">📸 사진 미션 9</span><p>성곽을 오르다 금강이 멋지게 펼쳐져 보이는 곳(공북루 등)에서 가족과 꼭 껴안고 다정하게 찰칵!</p><label class="camera-btn" for="cam_g9">📷 사진 업로드</label><input type="file" id="cam_g9" accept="image/*" style="display:none;" onchange="previewImg(event, 'prev_g9')"><div class="preview-box" id="prev_g9">사진이 표시됩니다</div></div>
+        <div class="mission-card"><span class="mission-badge drawing">🎨 그리기 미션 10</span><p>공산성을 지키던 군사들의 방패에 적군이 도망갈 만큼 무섭고 강력한 나만의 그림을 그려보세요!</p><canvas class="drawing-canvas" id="canvas_g10"></canvas><button class="action-btn" style="background:#E53E3E; margin-top:8px;" onclick="clearCanvas('canvas_g10')">지우기</button></div>
+    </div>
+
+    <!-- 🏇 탭 4: 황산벌 돌파 -->
+    <div id="tab-hwangsan" class="tab-content">
+        <div class="game-panel">
+            <h2 class="game-header-title">🏇 황산벌 돌파 미션</h2>
+            <div class="game-header-desc">
+                바위는 <b>점프(🔼)</b>로! 거대한 벽돌은 <b>숙이기(🔽)</b>로 피하세요!
+            </div>
+            <div class="hsan-game-container">
+                <div id="hsan-scoreBoard" class="hsan-score-board">점수: 0</div>
+                <div id="hsan-startScreen" class="game-overlay game-start-screen">
+                    <button class="game-btn" onclick="HwangsanGame.startGame()">게임 시작!</button>
+                </div>
+                <div id="hsan-gameOverScreen" class="game-overlay">
+                    <h2>게임 오버!</h2>
+                    <p id="hsan-finalScore" style="font-size: 1.3rem; margin-bottom: 20px;">최종 점수: 0</p>
+                    <button class="game-btn" onclick="HwangsanGame.startGame()">다시 달리기</button>
+                </div>
+                <canvas id="hsan-canvas" width="600" height="250"></canvas>
+            </div>
+            <div class="hsan-controls">
+                <button id="hsan-btnDuck" class="hsan-control-btn btn-duck">🔽 숙이기</button>
+                <button id="hsan-btnJump" class="hsan-control-btn btn-jump">🔼 점프</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🏹 탭 5: 공산성 지키기 -->
+    <div id="tab-gongsan" class="tab-content">
+        <div class="game-panel">
+            <h2 class="game-header-title">🏹 공산성 지키기</h2>
+            <div class="game-header-desc">
+                왕을 잡으면 친구 합류(최대 2명)! 약(💊)은 3갈레 미사일 15발!<br>
+                적이 성에 닿으면 친구가 먼저 도망갑니다!
+            </div>
+            <div class="gsan-game-container">
+                <div class="gsan-top-ui">
+                    <div id="gsan-killCount">처치: 0명</div>
+                    <div id="gsan-lifeDisplay">목숨: ❤️❤️❤️❤️❤️</div>
+                </div>
+                <div class="gsan-sub-ui">
+                    <div id="gsan-statusInfo">친구: 0명 | 일반 화살</div>
+                    <div id="gsan-bossWarning">보스 등장!</div>
+                </div>
+                <div id="gsan-startScreen" class="game-overlay gsan-start-screen">
+                    <h2>난이도를 선택하세요</h2>
+                    <div class="difficulty-select">
+                        <button class="diff-btn active" onclick="GongsanGame.setDiff('easy', this)">하</button>
+                        <button class="diff-btn" onclick="GongsanGame.setDiff('normal', this)">중</button>
+                        <button class="diff-btn" onclick="GongsanGame.setDiff('hard', this)">상</button>
+                    </div>
+                    <button class="game-btn secondary" onclick="GongsanGame.startGame()">전투 시작!</button>
+                </div>
+                <div id="gsan-gameOverScreen" class="game-overlay">
+                    <h2>성문이 완전히 무너졌습니다!</h2>
+                    <p id="gsan-finalScore" style="font-size: 1.2rem; margin-bottom: 20px;">최종 물리친 적: 0명</p>
+                    <button class="game-btn secondary" onclick="GongsanGame.startGame()">다시 방어하기</button>
+                </div>
+                <canvas id="gsan-canvas" width="360" height="500"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 고정 탭 바 -->
+    <nav class="bottom-tab-bar">
+        <button class="tab-btn active" onclick="switchTab('story', this)">
+            <span class="icon">📖</span>이야기
+        </button>
+        <button class="tab-btn" onclick="switchTab('buyeo', this)">
+            <span class="icon">🏺</span>부여
+        </button>
+        <button class="tab-btn" onclick="switchTab('gongju', this)">
+            <span class="icon">🏰</span>공주
+        </button>
+        <button class="tab-btn" onclick="switchTab('hwangsan', this)">
+            <span class="icon">🏇</span>황산벌
+        </button>
+        <button class="tab-btn" onclick="switchTab('gongsan', this)">
+            <span class="icon">🏹</span>공산성
+        </button>
+    </nav>
+</div>
+
+<!-- 모달 팝업 창 -->
+<div id="modal-overlay" onclick="closeModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <img id="modal-img" src="" alt="유물 이미지">
+        <h3 id="modal-title">단어 제목</h3>
+        <p id="modal-desc">상세 설명이 들어갑니다.</p>
+        <button class="close-modal" onclick="closeModal()">닫기</button>
+    </div>
+</div>
+
+<script>
+    const initedCanvases = new Set();
+
+    function startAdventure() {
+        const name = document.getElementById('user-name').value;
+        const school = document.getElementById('user-school').value;
+        if(!name || !school) {
+            alert("이름과 학교를 입력해 주세요!");
+            return;
+        }
+        document.getElementById('header-title').innerText = `👑 ${name} 대원의 탐험록`;
+        document.getElementById('header-sub').innerText = `${school} 파이팅! 백제 비밀 탐험 시작!`;
+
+        const onboarding = document.getElementById('onboarding-screen');
+        onboarding.style.transform = "translateY(-100%)";
+        setTimeout(() => onboarding.style.display = "none", 500);
+    }
+
+    function switchTab(tabId, btnElement) {
+        HwangsanGame.pause();
+        GongsanGame.pause();
+        if (typeof pauseStoryVideos === 'function') pauseStoryVideos();
+
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+        document.getElementById('tab-' + tabId).classList.add('active');
+        if(btnElement) btnElement.classList.add('active');
+        window.scrollTo(0, 0);
+
+        if (tabId === 'hwangsan') HwangsanGame.onShow();
+        if (tabId === 'gongsan') GongsanGame.onShow();
+        if (tabId === 'buyeo') {
+            initCanvas('canvas4');
+            initCanvas('canvas10');
+        }
+        if (tabId === 'gongju') {
+            initCanvas('canvas_g3');
+            initCanvas('canvas_g10');
+        }
+    }
+
+    function canEmbedYouTube() {
+        return location.protocol === 'http:' || location.protocol === 'https:';
+    }
+
+    function ytWatchUrl(id) {
+        return 'https://www.youtube.com/watch?v=' + id;
+    }
+
+    function ytEmbedUrl(id, autoplay) {
+        const params = new URLSearchParams({
+            rel: '0',
+            modestbranding: '1',
+            playsinline: '1',
+            enablejsapi: '1'
+        });
+        if (autoplay) params.set('autoplay', '1');
+        if (canEmbedYouTube()) params.set('origin', location.origin);
+        return 'https://www.youtube.com/embed/' + id + '?' + params.toString();
+    }
+
+    function playYouTube(box) {
+        const id = box.dataset.yt;
+        const title = box.dataset.title || '영상';
+        if (!id) return;
+        if (!canEmbedYouTube()) {
+            window.open(ytWatchUrl(id), '_blank', 'noopener');
+            return;
+        }
+        box.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.src = ytEmbedUrl(id, true);
+        iframe.title = title;
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        box.appendChild(iframe);
+    }
+
+    function initYouTubeEmbeds() {
+        document.querySelectorAll('.yt-embed').forEach(box => {
+            const id = box.dataset.yt;
+            const title = box.dataset.title || '유튜브 영상';
+            if (!id || box.dataset.ready) return;
+            box.dataset.ready = '1';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'yt-facade';
+            btn.setAttribute('aria-label', title + ' 재생');
+            btn.innerHTML = '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="' + title.replace(/"/g, '') + '"><span class="yt-play-btn">▶</span>';
+            btn.addEventListener('click', () => playYouTube(box));
+            box.appendChild(btn);
+        });
+    }
+
+    function pauseStoryVideos() {
+        document.querySelectorAll('.yt-embed iframe').forEach(iframe => {
+            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }), '*');
+        });
+    }
+
+    initYouTubeEmbeds();
+
+    function switchAct(actId, btnElement) {
+        pauseStoryVideos();
+        document.querySelectorAll('.act-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.act-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(actId).classList.add('active');
+        if (btnElement) btnElement.classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function openModal(title, desc, imgSrc) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-desc').innerText = desc;
+        document.getElementById('modal-img').src = imgSrc;
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').style.display = 'none';
+    }
+
+    function checkQuiz(inputId, correctVal) {
+        const val = document.getElementById(inputId).value.trim().replace(/\s+/g, '');
+        if(val.includes(correctVal)) {
+            alert("🎉 딩동댕! 정답이에요! 멋진 탐험대원이네요!");
+        } else {
+            alert("😅 앗, 정답이 아니에요! 설명판을 다시 꼼꼼히 읽어볼까요?");
+        }
+    }
+
+    function previewImg(event, previewId) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const box = document.getElementById(previewId);
+            box.innerHTML = `<img src="${reader.result}">`;
+        }
+        if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function initCanvas(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if(!canvas || initedCanvases.has(canvasId)) return;
+        const parentWidth = canvas.parentElement.clientWidth - 40;
+        if (parentWidth < 50) return;
+
+        const ctx = canvas.getContext('2d');
+        canvas.width = parentWidth;
+        canvas.height = 180;
+        ctx.strokeStyle = "#4D96FF";
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+
+        let painting = false;
+
+        function startPosition(e) { painting = true; draw(e); }
+        function endPosition() { painting = false; ctx.beginPath(); }
+        function draw(e) {
+            if(!painting) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startPosition);
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw);
+        initedCanvases.add(canvasId);
+    }
+
+    function clearCanvas(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    /* ========== 황산벌 돌파 게임 ========== */
+    const HwangsanGame = (function() {
+        const canvas = document.getElementById('hsan-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreBoard = document.getElementById('hsan-scoreBoard');
+        const startScreen = document.getElementById('hsan-startScreen');
+        const gameOverScreen = document.getElementById('hsan-gameOverScreen');
+        const finalScore = document.getElementById('hsan-finalScore');
+
+        let animationId;
+        let isPlaying = false;
+        let paused = false;
+        let visible = false;
+        let score = 0;
+        let frameCount = 0;
+        let baseGameSpeed = 6;
+        let gameSpeed = baseGameSpeed;
+        const groundHeight = 40;
+
+        class Scenery {
+            constructor(type) {
+                this.type = type;
+                this.x = canvas.width + Math.random() * 200;
+                if (this.type === 'cloud') {
+                    this.y = Math.random() * 80 + 20;
+                    this.size = Math.random() * 20 + 30;
+                    this.emoji = "☁️";
+                    this.speed = gameSpeed * 0.2;
+                } else if (this.type === 'mountain') {
+                    this.y = canvas.height - groundHeight + 10;
+                    this.size = Math.random() * 30 + 40;
+                    this.emoji = "⛰️";
+                    this.speed = gameSpeed * 0.4;
+                }
+            }
+            update() {
+                this.x -= this.speed;
+                if (this.x + this.size < -50) {
+                    this.x = canvas.width + Math.random() * 100;
+                }
+                this.draw();
+            }
+            draw() {
+                ctx.font = `${this.size}px Arial`;
+                ctx.textBaseline = "bottom";
+                ctx.fillText(this.emoji, this.x, this.y);
+            }
+        }
+
+        let sceneryItems = [];
+        for(let i=0; i<3; i++) sceneryItems.push(new Scenery('cloud'));
+        for(let i=0; i<2; i++) sceneryItems.push(new Scenery('mountain'));
+
+        const stars = Array.from({length: 20}, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * 100,
+            size: Math.random() * 2
+        }));
+
+        const player = {
+            x: 40,
+            y: 0,
+            width: 50,
+            normalHeight: 50,
+            duckHeight: 25,
+            height: 50,
+            dy: 0,
+            gravity: 0.8,
+            jumpForce: -13.5,
+            isJumping: false,
+            isDucking: false,
+
+            draw() {
+                ctx.font = this.isDucking ? "40px Arial" : "55px Arial";
+                ctx.textBaseline = "top";
+                const emoji = this.isDucking ? "🐎" : "🏇";
+                const yOffset = this.isDucking ? -5 : -8;
+                ctx.fillText(emoji, this.x - 5, this.y + yOffset);
+            },
+
+            update() {
+                if (this.isDucking && !this.isJumping) {
+                    this.height = this.duckHeight;
+                    this.y = canvas.height - groundHeight - this.height;
+                } else {
+                    this.height = this.normalHeight;
+                }
+
+                this.y += this.dy;
+                if (this.y + this.height < canvas.height - groundHeight) {
+                    this.dy += this.gravity;
+                    this.isJumping = true;
+                } else {
+                    this.dy = 0;
+                    this.isJumping = false;
+                    this.y = canvas.height - groundHeight - this.height;
+                }
+                this.draw();
+            },
+
+            jump() {
+                if (!this.isJumping) {
+                    this.dy = this.jumpForce;
+                    this.isJumping = true;
+                }
+            },
+
+            duck(state) {
+                this.isDucking = state;
+                if (state && this.isJumping) this.dy += 4;
+            }
+        };
+
+        let obstacles = [];
+        class Obstacle {
+            constructor() {
+                this.type = Math.random() < 0.5 ? 'ground' : 'wall';
+                this.x = canvas.width;
+                this.passed = false;
+                this.variant = Math.random() < 0.5 ? 0 : 1;
+
+                if (this.type === 'ground') {
+                    this.width = 42;
+                    this.height = 40;
+                    this.y = canvas.height - groundHeight - this.height;
+                } else {
+                    this.width = 48;
+                    this.height = canvas.height - groundHeight - 38;
+                    this.y = 0;
+                }
+            }
+
+            drawRock() {
+                const x = this.x;
+                const y = this.y;
+                const w = this.width;
+                const h = this.height;
+                ctx.fillStyle = '#718096';
+                ctx.beginPath();
+                ctx.moveTo(x + 6, y + h);
+                ctx.lineTo(x, y + h * 0.45);
+                ctx.lineTo(x + w * 0.28, y + 4);
+                ctx.lineTo(x + w * 0.72, y);
+                ctx.lineTo(x + w, y + h * 0.4);
+                ctx.lineTo(x + w - 4, y + h);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#A0AEC0';
+                ctx.beginPath();
+                ctx.ellipse(x + w * 0.38, y + h * 0.38, 7, 5, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#4A5568';
+                ctx.fillRect(x + 8, y + h - 6, w - 16, 6);
+            }
+
+            drawShield() {
+                const cx = this.x + this.width / 2;
+                const y = this.y;
+                ctx.fillStyle = '#C53030';
+                ctx.beginPath();
+                ctx.moveTo(cx, y);
+                ctx.lineTo(this.x + this.width - 2, y + 12);
+                ctx.lineTo(this.x + this.width - 4, y + 28);
+                ctx.quadraticCurveTo(cx, y + this.height + 6, this.x + 4, y + 28);
+                ctx.lineTo(this.x + 2, y + 12);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#744210';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = '#F6E05E';
+                ctx.beginPath();
+                ctx.arc(cx, y + 20, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawHangingLogs() {
+                const logH = 20;
+                const gap = 3;
+                ctx.fillStyle = '#5D4037';
+                ctx.fillRect(this.x + this.width / 2 - 3, 0, 6, this.height);
+                for (let yy = 0; yy < this.height - 4; yy += logH + gap) {
+                    const h = Math.min(logH, this.height - yy - 2);
+                    const grd = ctx.createLinearGradient(this.x, yy, this.x + this.width, yy);
+                    grd.addColorStop(0, '#6D4C41');
+                    grd.addColorStop(0.45, '#D4A574');
+                    grd.addColorStop(1, '#5D4037');
+                    ctx.fillStyle = grd;
+                    if (typeof ctx.roundRect === 'function') {
+                        ctx.beginPath();
+                        ctx.roundRect(this.x, yy, this.width, h, 6);
+                        ctx.fill();
+                        ctx.strokeStyle = '#3E2723';
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    } else {
+                        ctx.fillRect(this.x, yy, this.width, h);
+                        ctx.strokeStyle = '#3E2723';
+                        ctx.strokeRect(this.x, yy, this.width, h);
+                    }
+                    ctx.strokeStyle = 'rgba(62, 39, 35, 0.35)';
+                    ctx.beginPath();
+                    ctx.moveTo(this.x + 8, yy + h * 0.35);
+                    ctx.lineTo(this.x + this.width - 8, yy + h * 0.35);
+                    ctx.moveTo(this.x + 10, yy + h * 0.7);
+                    ctx.lineTo(this.x + this.width - 10, yy + h * 0.7);
+                    ctx.stroke();
+                }
+            }
+
+            draw() {
+                if (this.type === 'ground') {
+                    if (this.variant === 0) this.drawRock();
+                    else this.drawShield();
+                } else {
+                    this.drawHangingLogs();
+                }
+            }
+
+            update() {
+                this.x -= gameSpeed;
+                this.draw();
+            }
+        }
+
+        function drawEnvironment(nightCycle) {
+            ctx.fillStyle = "#87CEEB";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (nightCycle > 0.3) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${nightCycle})`;
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            sceneryItems.forEach(item => item.update());
+
+            ctx.fillStyle = `rgba(10, 10, 40, ${nightCycle * 0.7})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = nightCycle > 0.5 ? "#5D4037" : "#DEB887";
+            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+            ctx.fillStyle = nightCycle > 0.5 ? "#3E2723" : "#8B4513";
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - groundHeight);
+            ctx.lineTo(canvas.width, canvas.height - groundHeight);
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            paused = false;
+            cancelAnimationFrame(animationId);
+            gameOverScreen.style.display = 'flex';
+            finalScore.innerText = `최종 점수: ${score}점`;
+        }
+
+        function startGame() {
+            player.y = canvas.height - groundHeight - player.normalHeight;
+            player.dy = 0;
+            player.isDucking = false;
+            obstacles = [];
+            score = 0;
+            frameCount = 0;
+            gameSpeed = baseGameSpeed;
+
+            scoreBoard.innerText = `점수: ${score}`;
+            scoreBoard.style.color = "#2D3748";
+
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+
+            paused = false;
+            isPlaying = true;
+            animate();
+        }
+
+        function animate() {
+            if (!isPlaying || paused) return;
+            animationId = requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let nightCycle = (Math.sin(frameCount * 0.002) + 1) / 2;
+            drawEnvironment(nightCycle);
+
+            if(nightCycle > 0.6) {
+                scoreBoard.style.color = "#FFFFFF";
+                scoreBoard.style.textShadow = "2px 2px 0px rgba(0,0,0,0.7)";
+            } else {
+                scoreBoard.style.color = "#2D3748";
+                scoreBoard.style.textShadow = "2px 2px 0px rgba(255,255,255,0.7)";
+            }
+
+            player.update();
+
+            if (frameCount > 0 && frameCount % 300 === 0 && gameSpeed < 14) {
+                gameSpeed += 0.5;
+                sceneryItems.forEach(item => item.speed = item.type === 'cloud' ? gameSpeed * 0.2 : gameSpeed * 0.4);
+            }
+
+            let spawnRate = Math.max(80, 130 - (gameSpeed * 4));
+            if (frameCount % Math.floor(spawnRate) === 0) {
+                obstacles.push(new Obstacle());
+            }
+
+            for (let i = 0; i < obstacles.length; i++) {
+                let obs = obstacles[i];
+                obs.update();
+
+                let bufferX = 12;
+                let bufferY = 10;
+
+                if (
+                    player.x < obs.x + obs.width - bufferX &&
+                    player.x + player.width - bufferX > obs.x &&
+                    player.y < obs.y + obs.height - bufferY &&
+                    player.y + player.height - bufferY > obs.y
+                ) {
+                    gameOver();
+                }
+
+                if (obs.x + obs.width < player.x && !obs.passed) {
+                    score += 10;
+                    scoreBoard.innerText = `점수: ${score}`;
+                    obs.passed = true;
+                }
+            }
+
+            if (obstacles.length > 0 && obstacles[0].x + obstacles[0].width < -100) {
+                obstacles.shift();
+            }
+
+            frameCount++;
+        }
+
+        function pause() {
+            visible = false;
+            if (!isPlaying) return;
+            paused = true;
+            cancelAnimationFrame(animationId);
+        }
+
+        function onShow() {
+            visible = true;
+            if (isPlaying && paused) {
+                paused = false;
+                animate();
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!visible || !isPlaying || paused) return;
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                player.jump();
+            } else if (e.code === 'ArrowDown') {
+                e.preventDefault();
+                player.duck(true);
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (!visible) return;
+            if (e.code === 'ArrowDown') player.duck(false);
+        });
+
+        const btnJump = document.getElementById('hsan-btnJump');
+        const btnDuck = document.getElementById('hsan-btnDuck');
+
+        btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); if (isPlaying && !paused) player.jump(); });
+        btnJump.addEventListener('mousedown', (e) => { e.preventDefault(); if (isPlaying && !paused) player.jump(); });
+
+        btnDuck.addEventListener('touchstart', (e) => { e.preventDefault(); if (isPlaying && !paused) player.duck(true); });
+        btnDuck.addEventListener('mousedown', (e) => { e.preventDefault(); if (isPlaying && !paused) player.duck(true); });
+        btnDuck.addEventListener('touchend', (e) => { e.preventDefault(); player.duck(false); });
+        btnDuck.addEventListener('mouseup', (e) => { e.preventDefault(); player.duck(false); });
+        btnDuck.addEventListener('mouseleave', (e) => { e.preventDefault(); player.duck(false); });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(isPlaying && !paused) player.jump();
+        });
+
+        return { startGame, pause, onShow };
+    })();
+
+    /* ========== 공산성 지키기 게임 ========== */
+    const GongsanGame = (function() {
+        const canvas = document.getElementById('gsan-canvas');
+        const ctx = canvas.getContext('2d');
+
+        const killCountDisplay = document.getElementById('gsan-killCount');
+        const lifeDisplay = document.getElementById('gsan-lifeDisplay');
+        const statusInfo = document.getElementById('gsan-statusInfo');
+        const startScreen = document.getElementById('gsan-startScreen');
+        const gameOverScreen = document.getElementById('gsan-gameOverScreen');
+        const finalScore = document.getElementById('gsan-finalScore');
+        const bossWarning = document.getElementById('gsan-bossWarning');
+
+        let animationId;
+        let isPlaying = false;
+        let paused = false;
+        let visible = false;
+        let kills = 0;
+        let lives = 5;
+
+        const maxBreach = 3;
+        let breachCount = 0;
+
+        let frameCount = 0;
+        let nextBossKills = 10;
+
+        const maxFriends = 2;
+        let friendCount = 0;
+        let pillAmmo = 0;
+
+        let selectedDiff = 'easy';
+        let diffSettings = {
+            easy: { speedMul: 0.8, spawnMul: 1.3 },
+            normal: { speedMul: 1.1, spawnMul: 1.0 },
+            hard: { speedMul: 1.5, spawnMul: 0.7 }
+        };
+
+        let arrows = [];
+        let enemies = [];
+        let items = [];
+        let particles = [];
+
+        const wallHeight = 80;
+
+        function drawArchers() {
+            ctx.font = "36px Arial";
+            ctx.textBaseline = "middle";
+            ctx.textAlign = "center";
+
+            ctx.fillText("🏹", canvas.width / 2, 40);
+
+            const spacing = 35;
+            for (let i = 1; i <= friendCount; i++) {
+                if (i === 1) ctx.fillText("🏹", canvas.width / 2 - spacing, 45);
+                if (i === 2) ctx.fillText("🏹", canvas.width / 2 + spacing, 45);
+            }
+        }
+
+        class Arrow {
+            constructor(startX, startY, targetX, targetY, angleOffset = 0, isSpecial = false) {
+                this.x = startX;
+                this.y = startY;
+                this.speed = 12;
+                this.isSpecial = isSpecial;
+
+                const angle = Math.atan2(targetY - this.y, targetX - this.x) + angleOffset;
+                this.vx = Math.cos(angle) * this.speed;
+                this.vy = Math.sin(angle) * this.speed;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.draw();
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = this.isSpecial ? "#ED8936" : "#2D3748";
+                ctx.fill();
+            }
+        }
+
+        class Item {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 30;
+                this.height = 30;
+                this.vy = 1.8;
+                this.emoji = "💊";
+            }
+
+            update() {
+                this.y += this.vy;
+                if (this.y > canvas.height - 30) this.y = canvas.height - 30;
+                this.draw();
+            }
+
+            draw() {
+                ctx.font = "26px Arial";
+                ctx.textBaseline = "top";
+                ctx.textAlign = "center";
+                ctx.fillText(this.emoji, this.x, this.y);
+            }
+        }
+
+        class Enemy {
+            constructor(isBoss = false) {
+                this.isBoss = isBoss;
+                this.width = isBoss ? 55 : 32;
+                this.height = isBoss ? 55 : 32;
+                this.x = Math.random() * (canvas.width - this.width - 20) + 10;
+                this.y = canvas.height + 20;
+
+                let speedMultiplier = (1 + (kills * 0.05)) * diffSettings[selectedDiff].speedMul;
+
+                if (this.isBoss) {
+                    this.maxHp = 15 + (kills * 0.8);
+                    this.hp = this.maxHp;
+                    this.speed = 0.4 * speedMultiplier;
+                    this.emoji = "👹";
+                } else {
+                    this.maxHp = 1 + Math.floor(kills / 10);
+                    this.hp = this.maxHp;
+                    this.speed = (1.2 + Math.random() * 0.8) * speedMultiplier;
+                    this.emoji = Math.random() > 0.5 ? "🪖" : "🛡️";
+                }
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.draw();
+            }
+
+            draw() {
+                ctx.font = `${this.width}px Arial`;
+                ctx.textBaseline = "top";
+                ctx.textAlign = "left";
+                ctx.fillText(this.emoji, this.x, this.y);
+
+                const barWidth = this.width;
+                const barHeight = 5;
+                const barY = this.y - 8;
+
+                ctx.fillStyle = "red";
+                ctx.fillRect(this.x, barY, barWidth, barHeight);
+
+                ctx.fillStyle = "#48BB78";
+                const hpRatio = Math.max(0, this.hp / this.maxHp);
+                ctx.fillRect(this.x, barY, barWidth * hpRatio, barHeight);
+            }
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 2;
+                this.speedX = Math.random() * 6 - 3;
+                this.speedY = Math.random() * 6 - 3;
+                this.life = 20;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life--;
+                this.draw();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 107, 107, ${this.life / 20})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawWall() {
+            ctx.fillStyle = "#718096";
+            ctx.fillRect(0, 0, canvas.width, wallHeight);
+            ctx.strokeStyle = "#4A5568";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for(let i = 0; i <= canvas.width; i += 40) {
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, wallHeight);
+            }
+            ctx.moveTo(0, wallHeight - 10);
+            ctx.lineTo(canvas.width, wallHeight - 10);
+            ctx.stroke();
+
+            if (friendCount === 0) {
+                ctx.fillStyle = "#2D3748";
+                ctx.fillRect(10, wallHeight - 8, canvas.width - 20, 4);
+                ctx.fillStyle = "#E53E3E";
+                let defenseRatio = (maxBreach - breachCount) / maxBreach;
+                ctx.fillRect(10, wallHeight - 8, (canvas.width - 20) * defenseRatio, 4);
+            } else {
+                ctx.fillStyle = "#805AD5";
+                ctx.fillRect(10, wallHeight - 8, canvas.width - 20, 4);
+            }
+        }
+
+        function updateLifeUI() {
+            let hearts = "";
+            for(let i=0; i<lives; i++) hearts += "❤️";
+            lifeDisplay.innerText = `목숨: ${hearts}`;
+        }
+
+        function updateStatusUI() {
+            let pillText = pillAmmo > 0 ? ` | 💊 미사일(${pillAmmo}발)` : " | 일반 화살";
+            statusInfo.innerText = `친구: ${friendCount}명${pillText}`;
+            statusInfo.style.color = pillAmmo > 0 ? "#DD6B20" : "#805AD5";
+        }
+
+        function setDiff(diff, btn) {
+            selectedDiff = diff;
+            startScreen.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function fireArrowsAt(targetX, targetY) {
+            const centerX = canvas.width / 2;
+            const spacing = 35;
+
+            if (pillAmmo > 0) {
+                arrows.push(new Arrow(centerX, 40, targetX, targetY, 0, true));
+                arrows.push(new Arrow(centerX, 40, targetX, targetY, -0.2, true));
+                arrows.push(new Arrow(centerX, 40, targetX, targetY, 0.2, true));
+                pillAmmo--;
+                updateStatusUI();
+            } else {
+                arrows.push(new Arrow(centerX, 40, targetX, targetY, 0, false));
+            }
+
+            for (let i = 1; i <= friendCount; i++) {
+                if (i === 1) arrows.push(new Arrow(centerX - spacing, 45, targetX, targetY, 0, false));
+                if (i === 2) arrows.push(new Arrow(centerX + spacing, 45, targetX, targetY, 0, false));
+            }
+        }
+
+        function handleTouch(e) {
+            if (!isPlaying || paused) return;
+
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0) return;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            const targetX = (clientX - rect.left) * scaleX;
+            const targetY = (clientY - rect.top) * scaleY;
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                if (
+                    targetX >= item.x - 25 && targetX <= item.x + 25 &&
+                    targetY >= item.y - 25 && targetY <= item.y + 25
+                ) {
+                    pillAmmo += 15;
+                    updateStatusUI();
+                    items.splice(i, 1);
+                    return;
+                }
+            }
+
+            if (targetY > wallHeight) {
+                fireArrowsAt(targetX, targetY);
+            }
+        }
+
+        function gameOver() {
+            isPlaying = false;
+            paused = false;
+            cancelAnimationFrame(animationId);
+            gameOverScreen.style.display = 'flex';
+            finalScore.innerText = `최종 물리친 적: ${kills}명`;
+        }
+
+        function startGame() {
+            arrows = [];
+            enemies = [];
+            items = [];
+            particles = [];
+            kills = 0;
+            lives = 5;
+            breachCount = 0;
+            friendCount = 0;
+            pillAmmo = 0;
+            frameCount = 0;
+            nextBossKills = 10;
+
+            killCountDisplay.innerText = `처치: ${kills}명`;
+            updateLifeUI();
+            updateStatusUI();
+            bossWarning.style.display = 'none';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+
+            paused = false;
+            isPlaying = true;
+            animate();
+        }
+
+        function animate() {
+            if (!isPlaying || paused) return;
+            animationId = requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawWall();
+            drawArchers();
+
+            let baseSpawnRate = Math.max(20, 85 - (kills * 1.5));
+            let spawnRate = baseSpawnRate * diffSettings[selectedDiff].spawnMul;
+            if (frameCount % Math.floor(spawnRate) === 0) {
+                enemies.push(new Enemy());
+            }
+
+            if (kills >= nextBossKills) {
+                enemies.push(new Enemy(true));
+                nextBossKills += 10;
+                bossWarning.style.display = 'block';
+                setTimeout(() => { bossWarning.style.display = 'none'; }, 2000);
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                items[i].update();
+            }
+
+            for (let i = arrows.length - 1; i >= 0; i--) {
+                arrows[i].update();
+                if (arrows[i].x < 0 || arrows[i].x > canvas.width || arrows[i].y > canvas.height) {
+                    arrows.splice(i, 1);
+                }
+            }
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let enemy = enemies[i];
+                enemy.update();
+
+                if (enemy.y <= wallHeight) {
+                    enemies.splice(i, 1);
+
+                    if (friendCount > 0) {
+                        friendCount--;
+                        updateStatusUI();
+                    } else {
+                        breachCount++;
+                        if (breachCount >= maxBreach) {
+                            breachCount = 0;
+                            lives--;
+                            updateLifeUI();
+
+                            if (lives <= 0) {
+                                gameOver();
+                                return;
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                for (let j = arrows.length - 1; j >= 0; j--) {
+                    let arrow = arrows[j];
+                    if (
+                        arrow.x > enemy.x &&
+                        arrow.x < enemy.x + enemy.width &&
+                        arrow.y > enemy.y &&
+                        arrow.y < enemy.y + enemy.height
+                    ) {
+                        for(let p=0; p<4; p++) particles.push(new Particle(arrow.x, arrow.y));
+
+                        enemy.hp -= (arrow.isSpecial ? 1.5 : 1);
+                        arrows.splice(j, 1);
+
+                        if (enemy.hp <= 0) {
+                            kills++;
+                            killCountDisplay.innerText = `처치: ${kills}명`;
+
+                            if (enemy.isBoss) {
+                                if (friendCount < maxFriends) friendCount++;
+                                updateStatusUI();
+                            }
+
+                            if (Math.random() < 0.25 && !enemy.isBoss) {
+                                items.push(new Item(enemy.x + enemy.width/2, enemy.y));
+                            }
+
+                            enemies.splice(i, 1);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            frameCount++;
+        }
+
+        function pause() {
+            visible = false;
+            if (!isPlaying) return;
+            paused = true;
+            cancelAnimationFrame(animationId);
+        }
+
+        function onShow() {
+            visible = true;
+            if (isPlaying && paused) {
+                paused = false;
+                animate();
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleTouch);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleTouch(e);
+        });
+
+        return { startGame, setDiff, pause, onShow };
+    })();
+</script>
+
+</body>
+</html>
