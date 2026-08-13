@@ -381,7 +381,7 @@
         <div class="onboarding-card">
             <span style="font-size: 3.5rem;">🎒</span>
             <h2>백제 비밀 탐험대</h2>
-            <p>나만의 탐험대원 카드를 만들어주세요!<br><span style="font-size:0.9rem;color:#718096;">한 번 만들면 다음에 이름과 학교만 넣으면 이어서 탐험할 수 있어요.</span></p>
+            <p>나만의 탐험대원 카드를 만들어주세요!<br><span style="font-size:0.9rem;color:#718096;">같은 휴대폰에서 이름과 학교만 넣으면 이어서 탐험할 수 있어요.</span></p>
             <div class="input-group">
                 <label>👤 탐험대원 이름</label>
                 <input type="text" id="user-name" placeholder="예: 홍길동" autocomplete="username">
@@ -1077,6 +1077,8 @@
 <script>
     const initedCanvases = new Set();
     const TOKEN_KEY = 'traver_token';
+    const USERS_KEY = 'traver_users';
+    const CURRENT_KEY = 'traver_current';
     const QUIZ_IDS = ['bm1', 'bm3', 'bm7', 'bm8', 'bm_boat', 'gm1', 'gm4', 'gm6', 'gm8'];
     let currentTab = 'story';
     let currentAct = 'act1';
@@ -1180,24 +1182,69 @@
         restoring = false;
     }
 
+    function cardKey(name, school) {
+        return String(name || '').trim().toLowerCase() + '\n' + String(school || '').trim().toLowerCase();
+    }
+
+    function readUsers() {
+        try {
+            return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+        } catch {
+            return {};
+        }
+    }
+
+    function writeUsers(users) {
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+
+    function snapshotProgress() {
+        return {
+            lastTab: currentTab,
+            lastAct: currentAct,
+            quizzes: collectQuizzes(),
+            journals: collectJournals(),
+            viewed
+        };
+    }
+
+    function beginLocalSession(card, progress) {
+        const key = cardKey(card.name, card.school);
+        const users = readUsers();
+        const prev = users[key] || {};
+        users[key] = {
+            user: { name: card.name, school: card.school, age: card.age || prev.user && prev.user.age || null },
+            progress: progress || prev.progress || null
+        };
+        writeUsers(users);
+        localStorage.setItem(CURRENT_KEY, key);
+    }
+
+    function hasSession() {
+        return !!(localStorage.getItem(CURRENT_KEY) || localStorage.getItem(TOKEN_KEY));
+    }
+
     function scheduleSave() {
-        if (restoring || !localStorage.getItem(TOKEN_KEY)) return;
+        if (restoring || !hasSession()) return;
         clearTimeout(saveTimer);
         saveTimer = setTimeout(saveProgress, 700);
     }
 
     async function saveProgress() {
+        if (!hasSession()) return;
+        const key = localStorage.getItem(CURRENT_KEY);
+        if (key) {
+            const users = readUsers();
+            if (users[key]) {
+                users[key].progress = snapshotProgress();
+                writeUsers(users);
+            }
+        }
         if (!localStorage.getItem(TOKEN_KEY)) return;
         try {
-            await api('PUT', '/progress', {
-                lastTab: currentTab,
-                lastAct: currentAct,
-                quizzes: collectQuizzes(),
-                journals: collectJournals(),
-                viewed
-            });
+            await api('PUT', '/progress', snapshotProgress());
         } catch (err) {
-            console.warn('진도 저장 실패', err);
+            console.warn('서버 진도 저장 실패', err);
         }
     }
 
@@ -1222,6 +1269,19 @@
         };
     }
 
+    function resumeLocal(card) {
+        const saved = readUsers()[cardKey(card.name, card.school)];
+        if (!saved) return false;
+        beginLocalSession(saved.user, saved.progress);
+        enterApp(saved.user, saved.progress);
+        return true;
+    }
+
+    function isServerMissing(err) {
+        const msg = String((err && err.message) || err || '');
+        return /fetch|network|failed|연결|Failed to fetch|NetworkError|Load failed/i.test(msg);
+    }
+
     async function startAdventure() {
         const card = readCard();
         if (!card.name || !card.school) {
@@ -1231,15 +1291,17 @@
         try {
             const data = await api('POST', '/auth/register', card);
             localStorage.setItem(TOKEN_KEY, data.token);
-            enterApp(data.user);
+            beginLocalSession(data.user || card, null);
+            enterApp(data.user || card);
         } catch (err) {
+            if (resumeLocal(card)) return;
             const msg = err.message || '';
-            if (msg.includes('이미 만든') || msg.includes('이어가기')) {
-                alert(msg);
+            if (!isServerMissing(err) && (msg.includes('이미 만든') || msg.includes('이어가기'))) {
+                alert('이미 만든 탐험대원 카드예요. ‘이어가기’를 눌러 주세요.');
                 return;
             }
-            enterApp({ name: card.name, school: card.school });
-            alert('지금은 저장 서버에 연결되지 않았어요. 탐험은 할 수 있지만, 껐다 켜면 처음부터예요.');
+            beginLocalSession(card, null);
+            enterApp(card);
         }
     }
 
@@ -1256,9 +1318,11 @@
             });
             localStorage.setItem(TOKEN_KEY, data.token);
             const progress = await api('GET', '/progress');
-            enterApp(data.user, progress);
+            beginLocalSession(data.user || card, progress);
+            enterApp(data.user || card, progress);
         } catch (err) {
-            alert(err.message || "로그인하지 못했어요. 이름과 학교를 확인해 주세요.");
+            if (resumeLocal(card)) return;
+            alert("이름과 학교로 만든 카드를 찾지 못했어요. ‘탐험 출발하기’로 먼저 만들어 주세요.");
         }
     }
 
