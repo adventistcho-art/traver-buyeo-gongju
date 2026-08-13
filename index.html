@@ -1080,11 +1080,14 @@
     const USERS_KEY = 'traver_users';
     const CURRENT_KEY = 'traver_current';
     const QUIZ_IDS = ['bm1', 'bm3', 'bm7', 'bm8', 'bm_boat', 'gm1', 'gm4', 'gm6', 'gm8'];
+    const PHOTO_IDS = ['prev2', 'prev5', 'prev6', 'prev9', 'prev_boat', 'prev_g2', 'prev_g5', 'prev_g7', 'prev_g9'];
+    const CANVAS_IDS = ['canvas4', 'canvas10', 'canvas_g3', 'canvas_g10'];
     let currentTab = 'story';
     let currentAct = 'act1';
     let viewed = ['act1'];
     let restoring = false;
     let saveTimer = null;
+    let pendingDrawings = {};
 
     function resolveApiUrl() {
         if (window.TRAVER_API_URL) return String(window.TRAVER_API_URL).replace(/\/$/, '');
@@ -1122,6 +1125,33 @@
             if (el && el.value) quizzes[id] = el.value;
         });
         return quizzes;
+    }
+
+    function collectPhotos() {
+        const photos = {};
+        PHOTO_IDS.forEach(id => {
+            const img = document.querySelector('#' + id + ' img');
+            if (img && img.src && img.src.indexOf('data:') === 0) photos[id] = img.src;
+        });
+        return photos;
+    }
+
+    function collectDrawings() {
+        const drawings = {};
+        CANVAS_IDS.forEach(id => {
+            const canvas = document.getElementById(id);
+            if (!canvas || !initedCanvases.has(id)) return;
+            try {
+                const empty = document.createElement('canvas');
+                empty.width = canvas.width;
+                empty.height = canvas.height;
+                if (canvas.toDataURL() === empty.toDataURL()) return;
+                drawings[id] = canvas.toDataURL('image/jpeg', 0.72);
+            } catch (err) {
+                console.warn('그림 저장 실패', err);
+            }
+        });
+        return drawings;
     }
 
     function collectJournals() {
@@ -1179,7 +1209,40 @@
             const tabBtn = document.querySelector('.tab-btn[data-tab="' + progress.lastTab + '"]');
             switchTab(progress.lastTab, tabBtn);
         }
+        restorePhotos(progress.photos);
+        restoreDrawings(progress.drawings);
         restoring = false;
+    }
+
+    function restorePhotos(photos) {
+        if (!photos) return;
+        PHOTO_IDS.forEach(id => {
+            if (!photos[id]) return;
+            const box = document.getElementById(id);
+            if (box) box.innerHTML = '<img src="' + photos[id] + '">';
+        });
+    }
+
+    function restoreDrawings(drawings) {
+        pendingDrawings = drawings || {};
+        CANVAS_IDS.forEach(tryRestoreCanvas);
+    }
+
+    function tryRestoreCanvas(id) {
+        const src = pendingDrawings[id];
+        if (!src) return;
+        if (!initedCanvases.has(id)) {
+            initCanvas(id);
+            return;
+        }
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const img = new Image();
+        img.onload = function () {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = src;
     }
 
     function cardKey(name, school) {
@@ -1195,7 +1258,19 @@
     }
 
     function writeUsers(users) {
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        const payload = JSON.stringify(users);
+        try {
+            localStorage.setItem(USERS_KEY, payload);
+        } catch (err) {
+            console.warn('저장 공간이 부족해 사진·그림을 빼고 저장합니다', err);
+            Object.keys(users).forEach(key => {
+                if (users[key] && users[key].progress) {
+                    users[key].progress.photos = {};
+                    users[key].progress.drawings = {};
+                }
+            });
+            localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        }
     }
 
     function snapshotProgress() {
@@ -1204,6 +1279,8 @@
             lastAct: currentAct,
             quizzes: collectQuizzes(),
             journals: collectJournals(),
+            photos: collectPhotos(),
+            drawings: collectDrawings(),
             viewed
         };
     }
@@ -1450,12 +1527,33 @@
     }
 
     function previewImg(event, previewId) {
+        const file = event.target.files[0];
+        if (!file) return;
         const reader = new FileReader();
-        reader.onload = function(){
-            const box = document.getElementById(previewId);
-            box.innerHTML = `<img src="${reader.result}">`;
-        }
-        if(event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+        reader.onload = function () {
+            compressDataUrl(reader.result, 900, 0.7).then(function (src) {
+                const box = document.getElementById(previewId);
+                if (box) box.innerHTML = '<img src="' + src + '">';
+                scheduleSave();
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function compressDataUrl(dataUrl, maxW, quality) {
+        return new Promise(function (resolve) {
+            const img = new Image();
+            img.onload = function () {
+                const scale = Math.min(1, maxW / img.width);
+                const c = document.createElement('canvas');
+                c.width = Math.max(1, Math.round(img.width * scale));
+                c.height = Math.max(1, Math.round(img.height * scale));
+                c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = function () { resolve(dataUrl); };
+            img.src = dataUrl;
+        });
     }
 
     function initCanvas(canvasId) {
@@ -1474,7 +1572,7 @@
         let painting = false;
 
         function startPosition(e) { painting = true; draw(e); }
-        function endPosition() { painting = false; ctx.beginPath(); }
+        function endPosition() { painting = false; ctx.beginPath(); scheduleSave(); }
         function draw(e) {
             if(!painting) return;
             e.preventDefault();
@@ -1495,12 +1593,15 @@
         canvas.addEventListener('touchend', endPosition);
         canvas.addEventListener('touchmove', draw);
         initedCanvases.add(canvasId);
+        tryRestoreCanvas(canvasId);
     }
 
     function clearCanvas(canvasId) {
         const canvas = document.getElementById(canvasId);
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (pendingDrawings) delete pendingDrawings[canvasId];
+        scheduleSave();
     }
 
     /* ========== 황산벌 돌파 게임 ========== */
